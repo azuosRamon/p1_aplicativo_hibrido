@@ -4,6 +4,9 @@ AGENTS.md
 CLAUDE.md
 .claude/
 referencias_prints/
+agent/
+downloads/
+skills-lock.json
 # dependencies
 node_modules/
 
