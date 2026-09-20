@@ -1,3 +1,11 @@
+### TELAS CRIADAS
+1. Inicio
+2. Mensagens
+3. Explorar
+4. Perfil
+5. Configurações
+6. Salvos
+
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
