@@ -9,7 +9,7 @@ downloads/
 skills-lock.json
 # dependencies
 node_modules/
-
+.vscode/
 # Expo
 .expo/
 dist/

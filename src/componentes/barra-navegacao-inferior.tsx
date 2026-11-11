@@ -1,20 +1,22 @@
 import React from "react";
 import { View, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { CoresInstagram, RaiosBorda } from "@/constantes/sistema-design";
 import { usuarioAtualMock } from "@/dados/dados-mockados";
 
 export interface PropsBarraNavegacaoInferior {
   state: {
     index: number;
-    routes: Array<{ key: string; name: string }>;
+    routes: { key: string; name: string }[];
   };
-  navigation: {
+  navigation?: {
     navigate: (nomeRota: string) => void;
   };
+  navigateToTab?: (chaveRota: string) => void;
 }
 
-export function BarraNavegacaoInferior({ state, navigation }: PropsBarraNavegacaoInferior) {
+export function BarraNavegacaoInferior({ state, navigation, navigateToTab }: PropsBarraNavegacaoInferior) {
   // Mapeamento das abas
   const abas = [
     { nome: "index", iconeAtivo: "home", iconeInativo: "home-outline" },
@@ -27,11 +29,20 @@ export function BarraNavegacaoInferior({ state, navigation }: PropsBarraNavegaca
   const rotaAtual = state.routes[state.index]?.name;
 
   function navegarParaAba(nomeAba: string) {
-    if (nomeAba === "reels") {
-      navigation.navigate("explorar");
+    const nomeDestino = nomeAba === "reels" ? "explorar" : nomeAba;
+    const rotaDestino = state.routes.find((rota) => rota.name === nomeDestino);
+
+    if (navigateToTab && rotaDestino) {
+      navigateToTab(rotaDestino.key);
       return;
     }
-    navigation.navigate(nomeAba);
+
+    if (navigation?.navigate) {
+      navigation.navigate(nomeDestino);
+      return;
+    }
+
+    router.navigate(`/(abas)/${nomeDestino === "index" ? "" : nomeDestino}` as any);
   }
 
   return (

@@ -1,8 +1,8 @@
 # Diretrizes e Regras do Projeto (Expo & React Native)
 
-## 1. Expo SDK 57
+## 1. Expo SDK 58
 Consulte sempre a documentação oficial exata da versão antes de implementar ou modificar código:
-https://docs.expo.dev/versions/v57.0.0/
+https://docs.expo.dev/versions/v58.0.0/
 
 ## 2. Nomenclatura Obrigatória em Português do Brasil (pt-BR)
 Toda e qualquer entidade criada no projeto DEVE utilizar a língua portuguesa do Brasil:
