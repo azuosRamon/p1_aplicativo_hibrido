@@ -1,9 +1,10 @@
 import * as SQLite from "expo-sqlite";
 import { publicacoesFeedMock, publicacoesPerfilMock, usuarioAtualMock } from "@/dados/dados-mockados";
 
-const NOME_BANCO_DADOS = "instagram_p2_relacional.db";
+const NOME_BANCO_DADOS = "instagram_p2_v2.db";
 
 let instanciaBanco: SQLite.SQLiteDatabase | null = null;
+let promessaConexao: Promise<SQLite.SQLiteDatabase> | null = null;
 
 /**
  * DDL Relacional do SQLite:
@@ -12,9 +13,6 @@ let instanciaBanco: SQLite.SQLiteDatabase | null = null;
  * Regra prática: dados que você consulta e filtra -> SQLite.
  */
 const SQL_CRIAR_TABELAS = `
-  PRAGMA journal_mode = WAL;
-  PRAGMA foreign_keys = ON;
-
   CREATE TABLE IF NOT EXISTS publicacoes (
     id TEXT PRIMARY KEY NOT NULL,
     id_autor TEXT NOT NULL,
@@ -53,8 +51,7 @@ const SQL_CRIAR_TABELAS = `
 `;
 
 /**
- * 🎓 MÃO NA MASSA (ETAPA 6):
- * Abre (ou retorna) a conexão com o banco de dados SQLite e garante que as tabelas
+ * Abre (ou retorna) a conexão única com o banco de dados SQLite e garante que as tabelas
  * relacionais `publicacoes` e `comentarios` existam e recebam a carga inicial (seed).
  */
 export async function obterBancoDados(): Promise<SQLite.SQLiteDatabase> {
@@ -62,12 +59,24 @@ export async function obterBancoDados(): Promise<SQLite.SQLiteDatabase> {
     return instanciaBanco;
   }
 
-  const banco = await SQLite.openDatabaseAsync(NOME_BANCO_DADOS);
-  await banco.execAsync(SQL_CRIAR_TABELAS);
+  if (promessaConexao) {
+    return promessaConexao;
+  }
 
-  await popularDadosIniciaisSeVazio(banco);
-  instanciaBanco = banco;
-  return banco;
+  promessaConexao = (async () => {
+    const banco = await SQLite.openDatabaseAsync(NOME_BANCO_DADOS);
+    await banco.execAsync(SQL_CRIAR_TABELAS);
+    await popularDadosIniciaisSeVazio(banco);
+    instanciaBanco = banco;
+    return banco;
+  })();
+
+  try {
+    return await promessaConexao;
+  } catch (erro) {
+    promessaConexao = null;
+    throw erro;
+  }
 }
 
 /**
@@ -89,7 +98,7 @@ async function popularDadosIniciaisSeVazio(banco: SQLite.SQLiteDatabase): Promis
   // 1. Insere os posts existentes do Feed Principal
   for (const post of publicacoesFeedMock) {
     await banco.runAsync(
-      `INSERT INTO publicacoes (
+      `INSERT OR IGNORE INTO publicacoes (
         id, id_autor, nome_usuario, nome_completo, foto_autor_url,
         caminho_midia, legenda, localizacao, audio_nome, outras_pessoas_marcadas,
         texto_sobreposto, curtidas, esta_curtido, esta_salvo, eh_reel,
@@ -134,7 +143,7 @@ async function popularDadosIniciaisSeVazio(banco: SQLite.SQLiteDatabase): Promis
     const legenda = legendasPerfil[indice] ?? "Registro especial no perfil ✨";
 
     await banco.runAsync(
-      `INSERT INTO publicacoes (
+      `INSERT OR IGNORE INTO publicacoes (
         id, id_autor, nome_usuario, nome_completo, foto_autor_url,
         caminho_midia, legenda, localizacao, audio_nome, outras_pessoas_marcadas,
         texto_sobreposto, curtidas, esta_curtido, esta_salvo, eh_reel,
@@ -206,7 +215,7 @@ async function popularDadosIniciaisSeVazio(banco: SQLite.SQLiteDatabase): Promis
 
   for (const com of comentariosIniciais) {
     await banco.runAsync(
-      `INSERT INTO comentarios (
+      `INSERT OR IGNORE INTO comentarios (
         id, id_publicacao, nome_usuario, foto_usuario_url,
         texto, tempo_decorrido, curtidas, esta_curtido,
         curtido_pelo_autor, criado_em_timestamp
@@ -226,4 +235,3 @@ async function popularDadosIniciaisSeVazio(banco: SQLite.SQLiteDatabase): Promis
     );
   }
 }
-

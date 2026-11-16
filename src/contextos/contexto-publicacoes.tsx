@@ -33,12 +33,28 @@ interface DadosContextoPublicacoes {
 
 const ContextoPublicacoes = createContext<DadosContextoPublicacoes | undefined>(undefined);
 
+const legendasPerfilIniciais = [
+  "Foco total nos treinos e evolução diária! 💪🔥",
+  "Final de tarde incrível na praia, recarregando as energias 🌊☀️",
+  "Explorando novos ângulos e composições na fotografia urbana 📸✨",
+  "Construindo aplicativos híbridos modernos com React Native, Expo e SQLite 🚀📱",
+  "Dia de imersão em arquitetura de software e performance mobile ⚡",
+  "Inspiração em design minimalista e iluminação natural 🏛️",
+];
+
 function montarFallbackInicial(): PublicacaoFeed[] {
+  const postsFeed = publicacoesFeedMock.map((post) => ({
+    ...post,
+    comentarios: post.id === "feed_1" || post.id === "feed_2" ? 1 : post.comentarios,
+    curtidoPorDestaque: "aleisa2015",
+    ehDoUsuarioAtual: false,
+  }));
+
   const postsPerfilConvertidos: PublicacaoFeed[] = publicacoesPerfilMock.map((item, idx) => ({
     id: item.id,
     autor: usuarioAtualMock,
     midiaUrl: item.midiaUrl,
-    legenda: "Registro especial no perfil ✨",
+    legenda: legendasPerfilIniciais[idx] ?? "Registro especial no perfil ✨",
     localizacao: "Maricá",
     curtidas: 48 + idx * 15,
     comentarios: idx === 0 ? 1 : 0,
@@ -50,20 +66,22 @@ function montarFallbackInicial(): PublicacaoFeed[] {
     ehDoUsuarioAtual: true,
   }));
 
-  return [...publicacoesFeedMock, ...postsPerfilConvertidos];
+  return [...postsFeed, ...postsPerfilConvertidos];
 }
 
 export function ProvedorPublicacoes({ children }: { children: React.ReactNode }) {
-  const [publicacoes, setPublicacoes] = useState<PublicacaoFeed[]>([]);
-  const [estaCarregando, setEstaCarregando] = useState<boolean>(true);
+  // Inicializa já com os posts prontos para nunca travar a tela inicial em estado vazio
+  const [publicacoes, setPublicacoes] = useState<PublicacaoFeed[]>(() => montarFallbackInicial());
+  const [estaCarregando, setEstaCarregando] = useState<boolean>(false);
 
   const recarregarPublicacoes = useCallback(async () => {
     try {
       const listaBanco = await listarPublicacoesDoBanco();
-      setPublicacoes(listaBanco);
+      if (listaBanco.length > 0) {
+        setPublicacoes(listaBanco);
+      }
     } catch (erro) {
-      console.warn("Usando lista em memória (fallback SQLite):", erro);
-      setPublicacoes((atual) => (atual.length > 0 ? atual : montarFallbackInicial()));
+      console.warn("Usando lista inicial em memória (fallback SQLite):", erro);
     } finally {
       setEstaCarregando(false);
     }
@@ -80,6 +98,7 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
   ): Promise<PublicacaoFeed> {
     try {
       const nova = await criarNovaPublicacaoNoBanco(uriFoto, legenda, localizacao);
+      setPublicacoes((anterior) => [nova, ...anterior]);
       await recarregarPublicacoes();
       return nova;
     } catch (erro) {
@@ -156,15 +175,34 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
     idPublicacao: string,
     texto: string
   ): Promise<ComentarioPublicacao> {
-    const novoComentario = await inserirNovoComentarioNoBanco(idPublicacao, texto);
-
-    setPublicacoes((anterior) =>
-      anterior.map((p) =>
-        p.id === idPublicacao ? { ...p, comentarios: p.comentarios + 1 } : p
-      )
-    );
-
-    return novoComentario;
+    try {
+      const novoComentario = await inserirNovoComentarioNoBanco(idPublicacao, texto);
+      setPublicacoes((anterior) =>
+        anterior.map((p) =>
+          p.id === idPublicacao ? { ...p, comentarios: p.comentarios + 1 } : p
+        )
+      );
+      return novoComentario;
+    } catch (erro) {
+      console.warn("Fallback ao adicionar comentário:", erro);
+      const comentarioMemoria: ComentarioPublicacao = {
+        id: `com_${Date.now()}`,
+        idPublicacao,
+        nomeUsuario: usuarioAtualMock.nomeUsuario,
+        fotoUsuarioUrl: usuarioAtualMock.fotoUrl,
+        texto: texto.trim(),
+        tempoDecorrido: "Agora",
+        curtidas: 0,
+        estaCurtido: false,
+        curtidoPeloAutor: false,
+      };
+      setPublicacoes((anterior) =>
+        anterior.map((p) =>
+          p.id === idPublicacao ? { ...p, comentarios: p.comentarios + 1 } : p
+        )
+      );
+      return comentarioMemoria;
+    }
   }
 
   async function alternarCurtidaComentario(
@@ -210,4 +248,3 @@ export function usarPublicacoes(): DadosContextoPublicacoes {
   }
   return contexto;
 }
-
