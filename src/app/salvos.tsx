@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Image,
   Dimensions,
   ScrollView,
+  LayoutChangeEvent,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -32,6 +33,23 @@ export default function TelaSalvos() {
   const [postAberto, setPostAberto] = useState<PublicacaoFeed | null>(null);
   const filtros = ["Tudo", "Coleções", "Série", "Reels", "Posts"];
 
+  const referenciaScrollSalvos = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const jaPosicionouScroll = useRef<boolean>(false);
+
+  useEffect(() => {
+    jaPosicionouScroll.current = false;
+  }, [postAberto?.id]);
+
+  function registrarPosicaoItemSalvo(idPost: string, evento: LayoutChangeEvent) {
+    const posicaoY = evento.nativeEvent.layout.y;
+    if (!jaPosicionouScroll.current && postAberto && idPost === postAberto.id) {
+      jaPosicionouScroll.current = true;
+      setTimeout(() => {
+        referenciaScrollSalvos.current?.scrollTo({ y: posicaoY, animated: false });
+      }, 30);
+    }
+  }
+
   const itensFiltrados = publicacoesSalvas.filter((item) => {
     if (filtroAtivo === "Reels") return Boolean(item.ehReel);
     if (filtroAtivo === "Posts") return !item.ehReel;
@@ -53,16 +71,21 @@ export default function TelaSalvos() {
           aoVoltar={() => setPostAberto(null)}
         />
         <ScrollView
+          ref={referenciaScrollSalvos}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={estilos.conteudoLista}
         >
           {itensFiltrados.map((item) => (
-            <CartaoPublicacao
+            <View
               key={item.id}
-              publicacao={item}
-              aoPressionarComentarios={abrirComentarios}
-              aoPressionarCompartilhar={() => navegador.push("/(abas)/mensagens")}
-            />
+              onLayout={(evento) => registrarPosicaoItemSalvo(item.id, evento)}
+            >
+              <CartaoPublicacao
+                publicacao={item}
+                aoPressionarComentarios={abrirComentarios}
+                aoPressionarCompartilhar={() => navegador.push("/(abas)/mensagens")}
+              />
+            </View>
           ))}
         </ScrollView>
       </SafeAreaView>

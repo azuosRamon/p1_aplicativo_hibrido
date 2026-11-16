@@ -236,6 +236,15 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
     }
   }
 
+  const publicacoesFeedPrincipal = publicacoes.filter(
+    (p) =>
+      !p.id.startsWith("cat_") &&
+      !p.id.startsWith("flickr_") &&
+      !p.id.startsWith("wiki_") &&
+      !p.id.startsWith("api_") &&
+      !p.id.startsWith("exp_")
+  );
+
   const publicacoesDoUsuario = publicacoes.filter(
     (p) => p.ehDoUsuarioAtual || p.autor.id === usuarioAtualMock.id
   );
@@ -245,7 +254,7 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
   return (
     <ContextoPublicacoes.Provider
       value={{
-        publicacoes,
+        publicacoes: publicacoesFeedPrincipal,
         publicacoesDoUsuario,
         publicacoesSalvas,
         estaCarregando,
