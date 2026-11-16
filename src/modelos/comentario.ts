@@ -22,3 +22,4 @@ export interface RegistroComentarioBanco {
   curtido_pelo_autor: number;
   criado_em_timestamp: number;
 }
+

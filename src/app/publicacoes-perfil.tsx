@@ -123,3 +123,4 @@ const estilos = StyleSheet.create({
     paddingBottom: 48,
   },
 });
+

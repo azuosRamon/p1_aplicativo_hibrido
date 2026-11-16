@@ -1,10 +1,20 @@
-### TELAS CRIADAS
-1. Inicio
-2. Mensagens
-3. Explorar
-4. Perfil
+### TELAS CRIADAS (P1 + P2)
+1. Início (Feed Principal sincronizado com SQLite)
+2. Mensagens (Direct)
+3. Explorar (Integrado com API REST de busca de fotos por palavra-chave: `"casa"`, `"carro"`, `"moto"`, etc.)
+4. Perfil (Grade de 3 colunas sincronizada com SQLite)
 5. Configurações
 6. Salvos
+7. Novo Post — 1ª Etapa: Seleção de Foto da Galeria / Câmera (`src/app/novo-post/index.tsx`)
+8. Novo Post — 2ª Etapa: Adição de Legenda e Compartilhamento (`src/app/novo-post/legenda.tsx`)
+9. Posts do Perfil em Formato Scroll de Feed (`src/app/publicacoes-perfil.tsx`)
+10. Comentários da Publicação em Modal / Bottom Sheet (`src/app/comentarios.tsx`)
+
+### ARQUITETURA DE ARMAZENAMENTO E API (P2)
+- **FileSystem (`expo-file-system`)**: Salva os arquivos físicos das fotos capturadas pela câmera ou escolhidas na galeria dentro da pasta permanente do aplicativo (`documentDirectory/publicacoes_feed/`).
+- **SQLite (`expo-sqlite`)**: Banco de dados relacional com as tabelas `publicacoes` e `comentarios` (com chave estrangeira `FOREIGN KEY`), carga inicial (*seed*) dos posts existentes e persistência offline completa de posts, curtidas, salvos e comentários.
+- **AsyncStorage (`@react-native-async-storage/async-storage`)**: Armazena preferências e histórico recente de termos pesquisados na aba Explorar.
+- **SecureStore (`expo-secure-store`)**: Armazena credenciais e chave da API de forma criptografada no Keychain (iOS) / Keystore (Android).
 
 # Welcome to your Expo app 👋
 

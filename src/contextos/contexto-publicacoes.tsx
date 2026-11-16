@@ -210,3 +210,4 @@ export function usarPublicacoes(): DadosContextoPublicacoes {
   }
   return contexto;
 }
+

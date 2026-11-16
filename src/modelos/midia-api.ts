@@ -23,3 +23,4 @@ export interface RespostaBuscaPexels {
   total_results?: number;
   photos: FotoPexelsApi[];
 }
+

@@ -180,9 +180,14 @@ const estilos = StyleSheet.create({
     height: "100%",
   },
   sobreposicaoSelecionada: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     backgroundColor: "rgba(255, 255, 255, 0.35)",
     borderWidth: 2,
     borderColor: CoresInstagram.azulInstagram,
   },
 });
+

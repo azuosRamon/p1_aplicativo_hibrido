@@ -51,7 +51,7 @@ export default function TelaExplorar() {
           <PilulaFiltro
             key={palavra}
             rotulo={palavra}
-            selecionada={termoPesquisa.toLowerCase() === palavra.toLowerCase()}
+            estaSelecionado={termoPesquisa.toLowerCase() === palavra.toLowerCase()}
             aoPressionar={() => selecionarSugestaoRapida(palavra)}
           />
         ))}

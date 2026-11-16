@@ -149,3 +149,4 @@ const estilos = StyleSheet.create({
     fontWeight: "600",
   },
 });
+

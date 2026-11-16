@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import * as MediaLibrary from "expo-media-library";
+import * as MediaLibrary from "expo-media-library/legacy";
 import { SeletorMidiaGaleria, ItemFotoGaleria } from "@/componentes/seletor-midia-galeria";
 import { CoresInstagram } from "@/constantes/sistema-design";
 import { publicacoesExplorarMock, publicacoesPerfilMock } from "@/dados/dados-mockados";
@@ -248,3 +248,4 @@ const estilos = StyleSheet.create({
     justifyContent: "center",
   },
 });
+
