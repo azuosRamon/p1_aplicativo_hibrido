@@ -1,8 +1,17 @@
 import React from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { PublicacaoExplorar } from "@/modelos/publicacao";
-import { CoresInstagram } from "@/constantes/sistema-design";
+import { CoresInstagram, Tipografia } from "@/constantes/sistema-design";
 
 const LARGURA_TELA = Dimensions.get("window").width;
 const ESPACO = 1.5;
@@ -10,10 +19,19 @@ const LARGURA_ITEM = (LARGURA_TELA - ESPACO * 2) / 3;
 
 export interface PropsGradeExplorar {
   itens: PublicacaoExplorar[];
+  estaCarregando?: boolean;
+  aoAtualizar?: () => void;
   aoSelecionarItem?: (item: PublicacaoExplorar) => void;
+  cabecalhoLista?: React.ReactElement;
 }
 
-export function GradeExplorar({ itens, aoSelecionarItem }: PropsGradeExplorar) {
+export function GradeExplorar({
+  itens,
+  estaCarregando = false,
+  aoAtualizar,
+  aoSelecionarItem,
+  cabecalhoLista,
+}: PropsGradeExplorar) {
   function renderizarItem({ item, index }: { item: PublicacaoExplorar; index: number }) {
     const ehTerceiraColuna = (index + 1) % 3 === 0;
 
@@ -28,7 +46,7 @@ export function GradeExplorar({ itens, aoSelecionarItem }: PropsGradeExplorar) {
       >
         <Image source={{ uri: item.midiaUrl }} style={estilos.imagem} />
 
-        {/* Rotulo sutil de texto se houver */}
+        {/* Rótulo sutil de texto da imagem da API */}
         {item.rotuloTexto && (
           <View style={estilos.tarjaRotulo}>
             <Text style={estilos.textoRotulo} numberOfLines={1}>
@@ -50,12 +68,33 @@ export function GradeExplorar({ itens, aoSelecionarItem }: PropsGradeExplorar) {
     );
   }
 
+  if (estaCarregando && itens.length === 0) {
+    return (
+      <View style={estilos.conteinerCentral}>
+        {cabecalhoLista}
+        <View style={estilos.areaCarregamento}>
+          <ActivityIndicator size="large" color={CoresInstagram.textoPrimario} />
+          <Text style={estilos.textoStatus}>Buscando fotos na API...</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <FlatList
       data={itens}
       keyExtractor={(item) => item.id}
       renderItem={renderizarItem}
       numColumns={3}
+      ListHeaderComponent={cabecalhoLista}
+      refreshing={estaCarregando}
+      onRefresh={aoAtualizar}
+      ListEmptyComponent={
+        <View style={estilos.areaCarregamento}>
+          <Ionicons name="images-outline" size={42} color={CoresInstagram.textoSuave} />
+          <Text style={estilos.textoStatus}>Nenhuma imagem encontrada para esta busca.</Text>
+        </View>
+      }
       showsVerticalScrollIndicator={false}
       contentContainerStyle={estilos.listaConteudo}
     />
@@ -63,12 +102,26 @@ export function GradeExplorar({ itens, aoSelecionarItem }: PropsGradeExplorar) {
 }
 
 const estilos = StyleSheet.create({
+  conteinerCentral: {
+    flex: 1,
+  },
+  areaCarregamento: {
+    paddingVertical: 64,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+  textoStatus: {
+    ...Tipografia.subtitulo,
+    color: CoresInstagram.textoSecundario,
+    textAlign: "center",
+  },
   listaConteudo: {
     paddingBottom: 110,
   },
   itemConteiner: {
     width: LARGURA_ITEM,
-    height: LARGURA_ITEM * 1.6, // Proporção vertical estilo Reels
+    height: LARGURA_ITEM * 1.6,
     marginBottom: ESPACO,
     backgroundColor: CoresInstagram.fundoSecundario,
     position: "relative",

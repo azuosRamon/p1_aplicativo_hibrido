@@ -6,6 +6,7 @@ import { CoresInstagram, RaiosBorda } from "@/constantes/sistema-design";
 export interface PropsBarraPesquisa {
   valor: string;
   aoMudarTexto: (texto: string) => void;
+  aoSubmeterPesquisa?: () => void;
   textoMarcador?: string;
   iconeMetaAi?: boolean;
 }
@@ -13,20 +14,28 @@ export interface PropsBarraPesquisa {
 export function BarraPesquisa({
   valor,
   aoMudarTexto,
+  aoSubmeterPesquisa,
   textoMarcador = "Pesquisar",
   iconeMetaAi = false,
 }: PropsBarraPesquisa) {
   return (
     <View style={estilos.conteiner}>
-      <Ionicons
-        name={iconeMetaAi ? "sparkles-outline" : "search"}
-        size={18}
-        color={iconeMetaAi ? CoresInstagram.azulInstagram : CoresInstagram.textoSuave}
-        style={estilos.iconeEsquerda}
-      />
+      <TouchableOpacity
+        onPress={aoSubmeterPesquisa}
+        disabled={!aoSubmeterPesquisa}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name={iconeMetaAi ? "sparkles-outline" : "search"}
+          size={18}
+          color={iconeMetaAi ? CoresInstagram.azulInstagram : CoresInstagram.textoSuave}
+          style={estilos.iconeEsquerda}
+        />
+      </TouchableOpacity>
       <TextInput
         value={valor}
         onChangeText={aoMudarTexto}
+        onSubmitEditing={aoSubmeterPesquisa}
         placeholder={textoMarcador}
         placeholderTextColor={CoresInstagram.textoSuave}
         style={estilos.entrada}
