@@ -70,6 +70,7 @@ function montarFallbackInicial(): PublicacaoFeed[] {
 }
 
 export function ProvedorPublicacoes({ children }: { children: React.ReactNode }) {
+  "use no memo";
   // Inicializa já com os posts prontos para nunca travar a tela inicial em estado vazio
   const [publicacoes, setPublicacoes] = useState<PublicacaoFeed[]>(() => montarFallbackInicial());
   const [estaCarregando, setEstaCarregando] = useState<boolean>(false);
@@ -124,19 +125,21 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
   }
 
   async function alternarCurtida(idPublicacao: string): Promise<void> {
-    const alvo = publicacoes.find((p) => p.id === idPublicacao);
-    if (!alvo) return;
-
-    const novoEstadoCurtido = !alvo.estaCurtido;
-    const novoTotalCurtidas = novoEstadoCurtido ? alvo.curtidas + 1 : Math.max(0, alvo.curtidas - 1);
+    let novoEstadoCurtido = false;
+    let novoTotalCurtidas = 0;
+    let encontrou = false;
 
     setPublicacoes((anterior) =>
-      anterior.map((p) =>
-        p.id === idPublicacao
-          ? { ...p, estaCurtido: novoEstadoCurtido, curtidas: novoTotalCurtidas }
-          : p
-      )
+      anterior.map((p) => {
+        if (p.id !== idPublicacao) return p;
+        encontrou = true;
+        novoEstadoCurtido = !p.estaCurtido;
+        novoTotalCurtidas = novoEstadoCurtido ? p.curtidas + 1 : Math.max(0, p.curtidas - 1);
+        return { ...p, estaCurtido: novoEstadoCurtido, curtidas: novoTotalCurtidas };
+      })
     );
+
+    if (!encontrou) return;
 
     try {
       await alternarCurtidaNoBanco(idPublicacao, novoEstadoCurtido, novoTotalCurtidas);
@@ -146,14 +149,19 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
   }
 
   async function alternarSalvo(idPublicacao: string): Promise<void> {
-    const alvo = publicacoes.find((p) => p.id === idPublicacao);
-    if (!alvo) return;
-
-    const novoEstadoSalvo = !alvo.estaSalvo;
+    let novoEstadoSalvo = false;
+    let encontrou = false;
 
     setPublicacoes((anterior) =>
-      anterior.map((p) => (p.id === idPublicacao ? { ...p, estaSalvo: novoEstadoSalvo } : p))
+      anterior.map((p) => {
+        if (p.id !== idPublicacao) return p;
+        encontrou = true;
+        novoEstadoSalvo = !p.estaSalvo;
+        return { ...p, estaSalvo: novoEstadoSalvo };
+      })
     );
+
+    if (!encontrou) return;
 
     try {
       await alternarSalvoNoBanco(idPublicacao, novoEstadoSalvo);

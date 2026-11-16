@@ -28,6 +28,7 @@ const LARGURA_FOTO = (LARGURA_TELA - ESPACO * 2) / 3;
 type TipoAbaPerfil = "grade" | "reels" | "marcados";
 
 export default function TelaPerfil() {
+  "use no memo";
   const navegador = useRouter();
   const { publicacoesDoUsuario } = usarPublicacoes();
   const [abaAtiva, setAbaAtiva] = useState<TipoAbaPerfil>("grade");

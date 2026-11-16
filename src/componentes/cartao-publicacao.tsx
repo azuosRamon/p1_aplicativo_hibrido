@@ -19,21 +19,35 @@ export function CartaoPublicacao({
   aoPressionarComentarios,
   aoPressionarCompartilhar,
 }: PropsCartaoPublicacao) {
+  "use no memo";
   const { alternarCurtida, alternarSalvo } = usarPublicacoes();
+  const [estaCurtidoLocal, setEstaCurtidoLocal] = useState<boolean>(publicacao.estaCurtido ?? false);
+  const [totalCurtidasLocal, setTotalCurtidasLocal] = useState<number>(publicacao.curtidas);
+  const [estaSalvoLocal, setEstaSalvoLocal] = useState<boolean>(publicacao.estaSalvo ?? false);
   const [estaMudo, setEstaMudo] = useState<boolean>(true);
   const [estaSeguindo, setEstaSeguindo] = useState<boolean>(false);
 
-  const estaCurtido = publicacao.estaCurtido ?? false;
-  const totalCurtidas = publicacao.curtidas;
-  const estaSalvo = publicacao.estaSalvo ?? false;
+  React.useEffect(() => {
+    setEstaCurtidoLocal(publicacao.estaCurtido ?? false);
+    setTotalCurtidasLocal(publicacao.curtidas);
+    setEstaSalvoLocal(publicacao.estaSalvo ?? false);
+  }, [publicacao.estaCurtido, publicacao.curtidas, publicacao.estaSalvo]);
 
   function lidarComCurtir() {
+    const novoCurtido = !estaCurtidoLocal;
+    setEstaCurtidoLocal(novoCurtido);
+    setTotalCurtidasLocal((ant) => (novoCurtido ? ant + 1 : Math.max(0, ant - 1)));
     alternarCurtida(publicacao.id);
   }
 
   function lidarComSalvar() {
+    setEstaSalvoLocal((ant) => !ant);
     alternarSalvo(publicacao.id);
   }
+
+  const estaCurtido = estaCurtidoLocal;
+  const totalCurtidas = totalCurtidasLocal;
+  const estaSalvo = estaSalvoLocal;
 
   return (
     <View style={estilos.cartao}>

@@ -19,6 +19,7 @@ import { usarPublicacoes } from "@/contextos/contexto-publicacoes";
 import { publicacoesPerfilMock } from "@/dados/dados-mockados";
 
 export default function TelaNovoPostLegenda() {
+  "use no memo";
   const navegador = useRouter();
   const parametros = useLocalSearchParams<{ uriFoto?: string }>();
   const { criarPublicacao } = usarPublicacoes();

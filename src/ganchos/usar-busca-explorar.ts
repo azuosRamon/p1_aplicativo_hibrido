@@ -15,6 +15,7 @@ import {
  * 2. Ao `AsyncStorage` (`registrarTermoPesquisado` e `obterHistoricoBuscas`).
  */
 export function usarBuscaExplorar() {
+  "use no memo";
   const [termoPesquisa, setTermoPesquisa] = useState<string>("");
   const [itensExplorar, setItensExplorar] = useState<PublicacaoExplorar[]>([]);
   const [estaCarregando, setEstaCarregando] = useState<boolean>(true);

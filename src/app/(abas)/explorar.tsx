@@ -12,6 +12,7 @@ import { usarBuscaExplorar } from "@/ganchos/usar-busca-explorar";
 const SUGESTOES_EXPLORAR = ["casa", "carro", "moto", "praia", "natureza", "arquitetura"];
 
 export default function TelaExplorar() {
+  "use no memo";
   const navegador = useRouter();
 
   /**

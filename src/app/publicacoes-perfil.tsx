@@ -16,6 +16,7 @@ import { usuarioAtualMock } from "@/dados/dados-mockados";
 import { CoresInstagram } from "@/constantes/sistema-design";
 
 export default function TelaPublicacoesPerfil() {
+  "use no memo";
   const navegador = useRouter();
   const parametros = useLocalSearchParams<{ idPublicacao?: string }>();
   const { publicacoesDoUsuario } = usarPublicacoes();

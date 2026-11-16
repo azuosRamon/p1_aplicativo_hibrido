@@ -22,6 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const EMOJIS_RAPIDOS = ["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"];
 
 export default function TelaComentarios() {
+  "use no memo";
   const navegador = useRouter();
   const parametros = useLocalSearchParams<{ idPublicacao?: string }>();
   const idPublicacao = parametros.idPublicacao || "perf_1";

@@ -10,6 +10,7 @@ import { CoresInstagram } from "@/constantes/sistema-design";
 import { usarPublicacoes } from "@/contextos/contexto-publicacoes";
 
 export default function TelaInicioFeed() {
+  "use no memo";
   const navegador = useRouter();
   const { publicacoes, estaCarregando, recarregarPublicacoes } = usarPublicacoes();
 
