@@ -1,28 +1,73 @@
-import React, { useState } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import React from "react";
+import { View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { BarraPesquisa } from "@/componentes/barra-pesquisa";
 import { GradeExplorar } from "@/componentes/grade-explorar";
-import { publicacoesExplorarMock } from "@/dados/dados-mockados";
+import { PilulaFiltro } from "@/componentes/pilula-filtro";
 import { CoresInstagram } from "@/constantes/sistema-design";
-import { PublicacaoExplorar } from "@/modelos/publicacao";
+import { usarBuscaExplorar } from "@/ganchos/usar-busca-explorar";
+
+const SUGESTOES_EXPLORAR = ["casa", "carro", "moto", "praia", "natureza", "arquitetura"];
 
 export default function TelaExplorar() {
-  const [termoPesquisa, setTermoPesquisa] = useState("");
-  const [itensExplorar] = useState<PublicacaoExplorar[]>(publicacoesExplorarMock);
+  const navegador = useRouter();
 
-  const itensFiltrados = itensExplorar.filter((item) =>
-    item.rotuloTexto
-      ? item.rotuloTexto.toLowerCase().includes(termoPesquisa.toLowerCase())
-      : true
-  );
+  /**
+   * 🎓 MÃO NA MASSA (ETAPA 14):
+   * Consuma o gancho customizado `usarBuscaExplorar()` que criamos na Etapa 12
+   * para conectar a tela à API de imagens e ao AsyncStorage.
+   */
+  const {
+    termoPesquisa,
+    setTermoPesquisa,
+    itensExplorar,
+    estaCarregando,
+    executarPesquisa,
+  } = usarBuscaExplorar();
+
+  function abrirNovoPost() {
+    navegador.push("/novo-post" as any);
+  }
+
+  function lidarComSubmissaoBusca() {
+    executarPesquisa(termoPesquisa);
+  }
+
+  function selecionarSugestaoRapida(palavra: string) {
+    setTermoPesquisa(palavra);
+    executarPesquisa(palavra);
+  }
+
+  function renderizarPilulasSugestao() {
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={estilos.barraSugestoes}
+      >
+        {SUGESTOES_EXPLORAR.map((palavra) => (
+          <PilulaFiltro
+            key={palavra}
+            rotulo={palavra}
+            selecionada={termoPesquisa.toLowerCase() === palavra.toLowerCase()}
+            aoPressionar={() => selecionarSugestaoRapida(palavra)}
+          />
+        ))}
+      </ScrollView>
+    );
+  }
 
   return (
     <SafeAreaView style={estilos.areaSegura} edges={["top"]}>
       {/* Barra de Topo do Explorar com (+) e Barra de Pesquisa */}
       <View style={estilos.barraTopo}>
-        <TouchableOpacity style={estilos.botaoAdicionar} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={estilos.botaoAdicionar}
+          onPress={abrirNovoPost}
+          activeOpacity={0.7}
+        >
           <Ionicons name="add" size={28} color={CoresInstagram.textoPrimario} />
         </TouchableOpacity>
 
@@ -30,13 +75,19 @@ export default function TelaExplorar() {
           <BarraPesquisa
             valor={termoPesquisa}
             aoMudarTexto={setTermoPesquisa}
-            textoMarcador="Pesquisar"
+            aoSubmeterPesquisa={lidarComSubmissaoBusca}
+            textoMarcador="Pesquisar (ex: casa, carro, moto...)"
           />
         </View>
       </View>
 
-      {/* Grade de 3 Colunas com Mídias e Contadores */}
-      <GradeExplorar itens={itensFiltrados} />
+      {/* Grade de 3 Colunas Alimentada pela API */}
+      <GradeExplorar
+        itens={itensExplorar}
+        estaCarregando={estaCarregando}
+        aoAtualizar={() => executarPesquisa(termoPesquisa)}
+        cabecalhoLista={renderizarPilulasSugestao()}
+      />
     </SafeAreaView>
   );
 }
@@ -61,5 +112,10 @@ const estilos = StyleSheet.create({
   },
   conteinerPesquisa: {
     flex: 1,
+  },
+  barraSugestoes: {
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+    paddingTop: 2,
   },
 });
