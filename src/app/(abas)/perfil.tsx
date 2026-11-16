@@ -10,15 +10,16 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { CabecalhoPerfil } from "@/componentes/cabecalho-perfil";
 import {
   usuarioAtualMock,
   destaquesPerfilMock,
-  publicacoesPerfilMock,
 } from "@/dados/dados-mockados";
 import { CoresInstagram, Tipografia } from "@/constantes/sistema-design";
 import { ItemDestaque } from "@/modelos/destaque";
-import { PublicacaoPerfil } from "@/modelos/publicacao";
+import { PublicacaoFeed } from "@/modelos/publicacao";
+import { usarPublicacoes } from "@/contextos/contexto-publicacoes";
 
 const LARGURA_TELA = Dimensions.get("window").width;
 const ESPACO = 1.5;
@@ -27,9 +28,17 @@ const LARGURA_FOTO = (LARGURA_TELA - ESPACO * 2) / 3;
 type TipoAbaPerfil = "grade" | "reels" | "marcados";
 
 export default function TelaPerfil() {
+  const navegador = useRouter();
+  const { publicacoesDoUsuario } = usarPublicacoes();
   const [abaAtiva, setAbaAtiva] = useState<TipoAbaPerfil>("grade");
   const [destaques] = useState<ItemDestaque[]>(destaquesPerfilMock);
-  const [publicacoes] = useState<PublicacaoPerfil[]>(publicacoesPerfilMock);
+
+  function abrirPublicacaoEmScroll(idPublicacao: string) {
+    navegador.push({
+      pathname: "/publicacoes-perfil" as any,
+      params: { idPublicacao },
+    });
+  }
 
   function renderizarDestaques() {
     return (
@@ -106,14 +115,17 @@ export default function TelaPerfil() {
   function renderizarCabecalhoCompleto() {
     return (
       <View>
-        <CabecalhoPerfil usuario={usuarioAtualMock} />
+        <CabecalhoPerfil
+          usuario={usuarioAtualMock}
+          totalPublicacoesReal={publicacoesDoUsuario.length}
+        />
         {renderizarDestaques()}
         {renderizarSeletorAbas()}
       </View>
     );
   }
 
-  function renderizarFotoGrade({ item, index }: { item: PublicacaoPerfil; index: number }) {
+  function renderizarFotoGrade({ item, index }: { item: PublicacaoFeed; index: number }) {
     const ehTerceira = (index + 1) % 3 === 0;
 
     return (
@@ -122,10 +134,11 @@ export default function TelaPerfil() {
           estilos.itemFoto,
           { marginRight: ehTerceira ? 0 : ESPACO },
         ]}
+        onPress={() => abrirPublicacaoEmScroll(item.id)}
         activeOpacity={0.85}
       >
         <Image source={{ uri: item.midiaUrl }} style={estilos.imagemFoto} />
-        {item.ehVideo && (
+        {item.ehReel && (
           <View style={estilos.iconeVideoBadge}>
             <Ionicons name="play" size={14} color="#FFFFFF" />
           </View>
@@ -137,7 +150,7 @@ export default function TelaPerfil() {
   return (
     <SafeAreaView style={estilos.areaSegura} edges={["top"]}>
       <FlatList
-        data={publicacoes}
+        data={publicacoesDoUsuario}
         keyExtractor={(item) => item.id}
         renderItem={renderizarFotoGrade}
         numColumns={3}

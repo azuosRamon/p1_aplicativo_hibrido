@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { PublicacaoFeed } from "@/modelos/publicacao";
 import { AvatarUsuario } from "./avatar-usuario";
 import { CoresInstagram, Tipografia } from "@/constantes/sistema-design";
+import { usarPublicacoes } from "@/contextos/contexto-publicacoes";
 
 export interface PropsCartaoPublicacao {
   publicacao: PublicacaoFeed;
@@ -18,24 +19,20 @@ export function CartaoPublicacao({
   aoPressionarComentarios,
   aoPressionarCompartilhar,
 }: PropsCartaoPublicacao) {
-  const [estaCurtido, setEstaCurtido] = useState<boolean>(publicacao.estaCurtido ?? false);
-  const [totalCurtidas, setTotalCurtidas] = useState<number>(publicacao.curtidas);
-  const [estaSalvo, setEstaSalvo] = useState<boolean>(publicacao.estaSalvo ?? false);
+  const { alternarCurtida, alternarSalvo } = usarPublicacoes();
   const [estaMudo, setEstaMudo] = useState<boolean>(true);
   const [estaSeguindo, setEstaSeguindo] = useState<boolean>(false);
 
-  function alternarCurtida() {
-    if (estaCurtido) {
-      setEstaCurtido(false);
-      setTotalCurtidas((anterior) => anterior - 1);
-    } else {
-      setEstaCurtido(true);
-      setTotalCurtidas((anterior) => anterior + 1);
-    }
+  const estaCurtido = publicacao.estaCurtido ?? false;
+  const totalCurtidas = publicacao.curtidas;
+  const estaSalvo = publicacao.estaSalvo ?? false;
+
+  function lidarComCurtir() {
+    alternarCurtida(publicacao.id);
   }
 
-  function alternarSalvo() {
-    setEstaSalvo((anterior) => !anterior);
+  function lidarComSalvar() {
+    alternarSalvo(publicacao.id);
   }
 
   return (
@@ -59,27 +56,31 @@ export function CartaoPublicacao({
                 </Text>
               )}
             </View>
-            {publicacao.audioNome && (
+            {publicacao.audioNome ? (
               <View style={estilos.linhaAudio}>
                 <Ionicons name="musical-notes" size={11} color={CoresInstagram.textoSuave} />
                 <Text style={estilos.textoAudio} numberOfLines={1}>
                   {publicacao.audioNome}
                 </Text>
               </View>
-            )}
+            ) : publicacao.localizacao ? (
+              <Text style={estilos.textoLocalizacao}>{publicacao.localizacao}</Text>
+            ) : null}
           </View>
         </View>
 
         <View style={estilos.acoesCabecalho}>
-          <TouchableOpacity
-            style={[estilos.botaoSeguir, estaSeguindo && estilos.botaoSeguindo]}
-            onPress={() => setEstaSeguindo((ant) => !ant)}
-            activeOpacity={0.7}
-          >
-            <Text style={estilos.textoSeguir}>
-              {estaSeguindo ? "Seguindo" : "Seguir"}
-            </Text>
-          </TouchableOpacity>
+          {!publicacao.ehDoUsuarioAtual && (
+            <TouchableOpacity
+              style={[estilos.botaoSeguir, estaSeguindo && estilos.botaoSeguindo]}
+              onPress={() => setEstaSeguindo((ant) => !ant)}
+              activeOpacity={0.7}
+            >
+              <Text style={estilos.textoSeguir}>
+                {estaSeguindo ? "Seguindo" : "Seguir"}
+              </Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Ionicons name="ellipsis-horizontal" size={18} color={CoresInstagram.textoPrimario} />
           </TouchableOpacity>
@@ -107,30 +108,47 @@ export function CartaoPublicacao({
         </TouchableOpacity>
       </View>
 
-      {/* Barra de Ações (Curtir, Comentar, Enviar, Salvar) */}
+      {/* Faixa "Ver insights" nos posts do próprio usuário (fiel ao print post_perfil_aberto.jpeg) */}
+      {publicacao.ehDoUsuarioAtual && (
+        <TouchableOpacity style={estilos.faixaInsights} activeOpacity={0.7}>
+          <Text style={estilos.textoInsights}>Ver insights</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Barra de Ações (Curtir, Comentar, Repostar, Enviar, Salvar) */}
       <View style={estilos.barraAcoes}>
         <View style={estilos.acoesEsquerda}>
-          <TouchableOpacity onPress={alternarCurtida} style={estilos.botaoIcone}>
+          <TouchableOpacity onPress={lidarComCurtir} style={estilos.botaoIconeComContador}>
             <Ionicons
               name={estaCurtido ? "heart" : "heart-outline"}
               size={26}
               color={estaCurtido ? CoresInstagram.vermelhoNotificacao : CoresInstagram.textoPrimario}
             />
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => aoPressionarComentarios?.(publicacao.id)}
-            style={estilos.botaoIcone}
+            style={estilos.botaoIconeComContador}
           >
             <Ionicons name="chatbubble-outline" size={24} color={CoresInstagram.textoPrimario} />
+            {publicacao.comentarios > 0 && (
+              <Text style={estilos.contadorAcao}>{publicacao.comentarios}</Text>
+            )}
           </TouchableOpacity>
+
+          <TouchableOpacity style={estilos.botaoIconeComContador}>
+            <Ionicons name="repeat-outline" size={25} color={CoresInstagram.textoPrimario} />
+          </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => aoPressionarCompartilhar?.(publicacao)}
-            style={estilos.botaoIcone}
+            style={estilos.botaoIconeComContador}
           >
             <Ionicons name="paper-plane-outline" size={24} color={CoresInstagram.textoPrimario} />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={alternarSalvo}>
+
+        <TouchableOpacity onPress={lidarComSalvar}>
           <Ionicons
             name={estaSalvo ? "bookmark" : "bookmark-outline"}
             size={24}
@@ -139,17 +157,22 @@ export function CartaoPublicacao({
         </TouchableOpacity>
       </View>
 
-      {/* Curtidas e Legenda */}
+      {/* Curtidas, Legenda e Link para Comentários */}
       <View style={estilos.rodape}>
         <Text style={estilos.textoCurtidas}>
-          {totalCurtidas.toLocaleString("pt-BR")} curtidas
+          Curtido por <Text style={Tipografia.nomeUsuario}>{publicacao.curtidoPorDestaque || "aleisa2015"}</Text> e{" "}
+          <Text style={Tipografia.nomeUsuario}>outras {totalCurtidas.toLocaleString("pt-BR")} pessoas</Text>
         </Text>
-        <View style={estilos.caixaLegenda}>
-          <Text style={Tipografia.corpo}>
-            <Text style={Tipografia.nomeUsuario}>{publicacao.autor.nomeUsuario} </Text>
-            {publicacao.legenda}
-          </Text>
-        </View>
+
+        {publicacao.legenda.length > 0 && (
+          <View style={estilos.caixaLegenda}>
+            <Text style={Tipografia.corpo}>
+              <Text style={Tipografia.nomeUsuario}>{publicacao.autor.nomeUsuario} </Text>
+              {publicacao.legenda}
+            </Text>
+          </View>
+        )}
+
         {publicacao.comentarios > 0 && (
           <TouchableOpacity
             onPress={() => aoPressionarComentarios?.(publicacao.id)}
@@ -204,6 +227,11 @@ const estilos = StyleSheet.create({
     ...Tipografia.legenda,
     marginLeft: 4,
     fontSize: 11,
+  },
+  textoLocalizacao: {
+    color: CoresInstagram.textoPrimario,
+    fontSize: 12,
+    marginTop: 1,
   },
   acoesCabecalho: {
     flexDirection: "row",
@@ -262,6 +290,18 @@ const estilos = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  faixaInsights: {
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderBottomWidth: 0.5,
+    borderBottomColor: CoresInstagram.bordaSuave,
+  },
+  textoInsights: {
+    color: "#589BFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
   barraAcoes: {
     flexDirection: "row",
     alignItems: "center",
@@ -274,15 +314,21 @@ const estilos = StyleSheet.create({
     alignItems: "center",
     gap: 16,
   },
-  botaoIcone: {
+  botaoIconeComContador: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: 5,
+  },
+  contadorAcao: {
+    color: CoresInstagram.textoPrimario,
+    fontSize: 14,
+    fontWeight: "700",
   },
   rodape: {
     paddingHorizontal: 12,
   },
   textoCurtidas: {
-    ...Tipografia.nomeUsuario,
+    ...Tipografia.corpo,
     marginBottom: 6,
   },
   caixaLegenda: {
