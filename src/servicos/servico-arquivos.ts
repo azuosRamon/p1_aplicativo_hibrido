@@ -5,12 +5,6 @@ import { Platform } from "react-native";
  * Pasta física permanente dentro do aplicativo onde as fotos das publicações serão salvas.
  * Conforme o slide da aula:
  * FileSystem -> Guarda: arquivos (sem criptografia) -> Use para: fotos, PDFs, downloads.
- *
- * IMPORTANTE PARA A PROVA:
- * Nunca salvamos a imagem inteira (binário/base64 pesado) dentro do SQLite!
- * O fluxo profissional é:
- * 1. Copiar o arquivo de foto da câmera/galeria para o FileSystem (pasta permanente do app).
- * 2. Salvar apenas o texto do caminho (URI gerada pelo FileSystem) na coluna `caminho_midia` do SQLite.
  */
 const PASTA_PUBLICACOES = `${FileSystem.documentDirectory ?? ""}publicacoes_feed/`;
 
@@ -29,15 +23,10 @@ export async function garantirPastaPublicacoes(): Promise<void> {
 }
 
 /**
- * 🎓 MÃO NA MASSA (ETAPA 5):
  * Copia uma foto escolhida na galeria ou tirada pela câmera (uriOrigem)
  * para a pasta permanente do aplicativo no FileSystem (caminhoDestino) e retorna o novo caminho salvo.
- *
- * Utilize:
- * await FileSystem.copyAsync({ from: uriOrigem, to: caminhoDestino });
  */
 export async function salvarFotoNoSistemaArquivos(uriOrigem: string): Promise<string> {
-  // Se estiver na Web ou já for uma URL remota (http/https), retorna a própria URI
   if (
     Platform.OS === "web" ||
     !FileSystem.documentDirectory ||
@@ -47,16 +36,21 @@ export async function salvarFotoNoSistemaArquivos(uriOrigem: string): Promise<st
     return uriOrigem;
   }
 
-  await garantirPastaPublicacoes();
+  try {
+    await garantirPastaPublicacoes();
 
-  const extensao = uriOrigem.split(".").pop()?.split("?")[0] || "jpg";
-  const nomeArquivo = `foto_${Date.now()}.${extensao}`;
-  const caminhoDestino = `${PASTA_PUBLICACOES}${nomeArquivo}`;
-  await FileSystem.copyAsync({
-    from: uriOrigem,
-    to: caminhoDestino,
-  });
+    const extensao = uriOrigem.split(".").pop()?.split("?")[0] || "jpg";
+    const nomeArquivo = `foto_${Date.now()}.${extensao}`;
+    const caminhoDestino = `${PASTA_PUBLICACOES}${nomeArquivo}`;
 
-  return caminhoDestino;
+    await FileSystem.copyAsync({
+      from: uriOrigem,
+      to: caminhoDestino,
+    });
+
+    return caminhoDestino;
+  } catch (erro) {
+    console.warn("Aviso ao copiar foto para o FileSystem (mantendo URI original):", erro);
+    return uriOrigem;
+  }
 }
-

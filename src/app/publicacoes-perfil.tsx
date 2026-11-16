@@ -1,5 +1,12 @@
-import React, { useMemo } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useRef, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  LayoutChangeEvent,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -13,23 +20,29 @@ export default function TelaPublicacoesPerfil() {
   const parametros = useLocalSearchParams<{ idPublicacao?: string }>();
   const { publicacoesDoUsuario } = usarPublicacoes();
 
-  // Posiciona a foto clicada na grade do perfil como primeiro item visível do scroll
-  const listaOrdenadaParaScroll = useMemo(() => {
-    if (!parametros.idPublicacao) {
-      return publicacoesDoUsuario;
+  const referenciaScroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const posicoesYPorId = useRef<Record<string, number>>({});
+  const jaPosicionouScroll = useRef<boolean>(false);
+
+  useEffect(() => {
+    jaPosicionouScroll.current = false;
+  }, [parametros.idPublicacao]);
+
+  function registrarPosicaoItem(idPost: string, evento: LayoutChangeEvent) {
+    const posicaoY = evento.nativeEvent.layout.y;
+    posicoesYPorId.current[idPost] = posicaoY;
+
+    if (
+      !jaPosicionouScroll.current &&
+      parametros.idPublicacao &&
+      idPost === parametros.idPublicacao
+    ) {
+      jaPosicionouScroll.current = true;
+      setTimeout(() => {
+        referenciaScroll.current?.scrollTo({ y: posicaoY, animated: false });
+      }, 30);
     }
-    const indiceClicado = publicacoesDoUsuario.findIndex(
-      (item) => item.id === parametros.idPublicacao
-    );
-    if (indiceClicado <= 0) {
-      return publicacoesDoUsuario;
-    }
-    const selecionada = publicacoesDoUsuario[indiceClicado];
-    const restantes = publicacoesDoUsuario.filter(
-      (item) => item.id !== parametros.idPublicacao
-    );
-    return [selecionada, ...restantes];
-  }, [publicacoesDoUsuario, parametros.idPublicacao]);
+  }
 
   function abrirComentarios(idPublicacao: string) {
     navegador.push({
@@ -62,20 +75,25 @@ export default function TelaPublicacoesPerfil() {
         <View style={estilos.espacadorDireito} />
       </View>
 
-      {/* Lista Vertical em Formato de Feed Reutilizando CartaoPublicacao */}
-      <FlatList
-        data={listaOrdenadaParaScroll}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <CartaoPublicacao
-            publicacao={item}
-            aoPressionarComentarios={abrirComentarios}
-            aoPressionarCompartilhar={irParaDirect}
-          />
-        )}
+      {/* Scroll Mantendo a Ordem Original das Publicações do Perfil */}
+      <ScrollView
+        ref={referenciaScroll}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={estilos.conteudoLista}
-      />
+      >
+        {publicacoesDoUsuario.map((item) => (
+          <View
+            key={item.id}
+            onLayout={(evento) => registrarPosicaoItem(item.id, evento)}
+          >
+            <CartaoPublicacao
+              publicacao={item}
+              aoPressionarComentarios={abrirComentarios}
+              aoPressionarCompartilhar={irParaDirect}
+            />
+          </View>
+        ))}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -123,4 +141,3 @@ const estilos = StyleSheet.create({
     paddingBottom: 48,
   },
 });
-

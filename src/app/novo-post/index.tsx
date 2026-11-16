@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,13 +6,11 @@ import {
   Image,
   StyleSheet,
   Alert,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import * as MediaLibrary from "expo-media-library/legacy";
 import { SeletorMidiaGaleria, ItemFotoGaleria } from "@/componentes/seletor-midia-galeria";
 import { CoresInstagram } from "@/constantes/sistema-design";
 import { publicacoesExplorarMock, publicacoesPerfilMock } from "@/dados/dados-mockados";
@@ -33,40 +31,6 @@ export default function TelaNovoPostPrimeiraEtapa() {
   const [fotosGaleria, setFotosGaleria] = useState<ItemFotoGaleria[]>(FOTOS_GALERIA_INICIAIS);
   const [uriSelecionada, setUriSelecionada] = useState<string>(FOTOS_GALERIA_INICIAIS[0].uri);
   const [modoAjuste, setModoAjuste] = useState<"cover" | "contain">("cover");
-
-  useEffect(() => {
-    async function carregarFotosReaisDoAparelho() {
-      if (Platform.OS === "web") {
-        return;
-      }
-
-      try {
-        const permissao = await MediaLibrary.requestPermissionsAsync();
-        if (!permissao.granted) {
-          return;
-        }
-
-        const midiasDispositivo = await MediaLibrary.getAssetsAsync({
-          first: 24,
-          mediaType: [MediaLibrary.MediaType.photo],
-          sortBy: [MediaLibrary.SortBy.creationTime],
-        });
-
-        if (midiasDispositivo.assets.length > 0) {
-          const fotosLocais: ItemFotoGaleria[] = midiasDispositivo.assets.map((ativo) => ({
-            id: ativo.id,
-            uri: ativo.uri,
-          }));
-          setFotosGaleria([...fotosLocais, ...FOTOS_GALERIA_INICIAIS]);
-          setUriSelecionada(fotosLocais[0].uri);
-        }
-      } catch (erro) {
-        console.warn("Galeria local indisponível no Expo Go, usando fotos padrão:", erro);
-      }
-    }
-
-    carregarFotosReaisDoAparelho();
-  }, []);
 
   async function abrirCameraNativa() {
     try {
@@ -173,7 +137,7 @@ export default function TelaNovoPostPrimeiraEtapa() {
         </TouchableOpacity>
       </View>
 
-      {/* Seletor de Mídia e Grade de Fotos Recentes da Galeria */}
+      {/* Seletor de Mídia e Grade de Fotos da Galeria */}
       <SeletorMidiaGaleria
         fotosGaleria={fotosGaleria}
         uriSelecionada={uriSelecionada}
@@ -248,4 +212,3 @@ const estilos = StyleSheet.create({
     justifyContent: "center",
   },
 });
-
