@@ -1,17 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { CarrosselStories } from "@/componentes/carrossel-stories";
 import { CartaoPublicacao } from "@/componentes/cartao-publicacao";
-import { storiesMock, publicacoesFeedMock } from "@/dados/dados-mockados";
+import { storiesMock } from "@/dados/dados-mockados";
 import { CoresInstagram } from "@/constantes/sistema-design";
-import { PublicacaoFeed } from "@/modelos/publicacao";
+import { usarPublicacoes } from "@/contextos/contexto-publicacoes";
 
 export default function TelaInicioFeed() {
   const navegador = useRouter();
-  const [listaPublicacoes] = useState<PublicacaoFeed[]>(publicacoesFeedMock);
+  const { publicacoes, estaCarregando, recarregarPublicacoes } = usarPublicacoes();
+
+  function abrirNovoPost() {
+    navegador.push("/novo-post" as any);
+  }
 
   function irParaDirect() {
     navegador.push("/(abas)/mensagens");
@@ -19,6 +23,13 @@ export default function TelaInicioFeed() {
 
   function irParaPerfil() {
     navegador.push("/(abas)/perfil");
+  }
+
+  function abrirComentarios(idPublicacao: string) {
+    navegador.push({
+      pathname: "/comentarios" as any,
+      params: { idPublicacao },
+    });
   }
 
   function renderizarCabecalhoLista() {
@@ -35,6 +46,7 @@ export default function TelaInicioFeed() {
       <View style={estilos.barraTopo}>
         <TouchableOpacity
           style={estilos.botaoIcone}
+          onPress={abrirNovoPost}
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -56,21 +68,24 @@ export default function TelaInicioFeed() {
         </View>
       </View>
 
-      {/* Feed com Stories no topo e Publicações */}
+      {/* Feed com Stories no topo e Publicações vindas do SQLite */}
       <FlatList
-        data={listaPublicacoes}
+        data={publicacoes}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <CartaoPublicacao
             publicacao={item}
             aoPressionarAutor={irParaPerfil}
+            aoPressionarComentarios={abrirComentarios}
             aoPressionarCompartilhar={irParaDirect}
           />
         )}
         ListHeaderComponent={renderizarCabecalhoLista}
+        refreshing={estaCarregando}
+        onRefresh={recarregarPublicacoes}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={estilos.conteudoLista}
-        initialNumToRender={3}
+        initialNumToRender={4}
         maxToRenderPerBatch={4}
         windowSize={5}
       />
@@ -109,6 +124,6 @@ const estilos = StyleSheet.create({
     alignItems: "center",
   },
   conteudoLista: {
-    paddingBottom: 100, // Espaçamento para não ser sobreposto pela barra de navegação flutuante
+    paddingBottom: 100,
   },
 });
