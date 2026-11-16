@@ -20,7 +20,9 @@ const LARGURA_ITEM = (LARGURA_TELA - ESPACO * 2) / 3;
 export interface PropsGradeExplorar {
   itens: PublicacaoExplorar[];
   estaCarregando?: boolean;
+  estaCarregandoMais?: boolean;
   aoAtualizar?: () => void;
+  aoCarregarMais?: () => void;
   aoSelecionarItem?: (item: PublicacaoExplorar) => void;
   cabecalhoLista?: React.ReactElement;
 }
@@ -28,10 +30,14 @@ export interface PropsGradeExplorar {
 export function GradeExplorar({
   itens,
   estaCarregando = false,
+  estaCarregandoMais = false,
   aoAtualizar,
+  aoCarregarMais,
   aoSelecionarItem,
   cabecalhoLista,
 }: PropsGradeExplorar) {
+  "use no memo";
+
   function renderizarItem({ item, index }: { item: PublicacaoExplorar; index: number }) {
     const ehTerceiraColuna = (index + 1) % 3 === 0;
 
@@ -89,6 +95,16 @@ export function GradeExplorar({
       ListHeaderComponent={cabecalhoLista}
       refreshing={estaCarregando}
       onRefresh={aoAtualizar}
+      onEndReached={aoCarregarMais}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={
+        estaCarregandoMais ? (
+          <View style={estilos.rodapeCarregandoMais}>
+            <ActivityIndicator size="small" color={CoresInstagram.textoPrimario} />
+            <Text style={estilos.textoCarregandoMais}>Carregando mais fotos...</Text>
+          </View>
+        ) : null
+      }
       ListEmptyComponent={
         <View style={estilos.areaCarregamento}>
           <Ionicons name="images-outline" size={42} color={CoresInstagram.textoSuave} />
@@ -115,6 +131,17 @@ const estilos = StyleSheet.create({
     ...Tipografia.subtitulo,
     color: CoresInstagram.textoSecundario,
     textAlign: "center",
+  },
+  rodapeCarregandoMais: {
+    paddingVertical: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  textoCarregandoMais: {
+    color: CoresInstagram.textoSecundario,
+    fontSize: 13,
   },
   listaConteudo: {
     paddingBottom: 110,
