@@ -6,12 +6,14 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export interface PropsCabecalhoPerfil {
     usuario: Usuario;
+    totalPublicacoesReal?: number;
     aoPressionarEditar?: () => void;
     aoPressionarCompartilhar?: () => void;
 }
 
 export function CabecalhoPerfil({
     usuario,
+    totalPublicacoesReal,
     aoPressionarEditar,
     aoPressionarCompartilhar,
 }: PropsCabecalhoPerfil) {
@@ -21,11 +23,19 @@ export function CabecalhoPerfil({
         navegador.push("/configuracoes");
     }
 
+    function abrirNovoPost() {
+        navegador.push("/novo-post" as any);
+    }
+
     return (
         <View style={estilos.conteiner}>
             {/* Barra de Topo do Perfil */}
             <View style={estilos.barraTopo}>
-                <TouchableOpacity style={estilos.botaoIcone} activeOpacity={0.7}>
+                <TouchableOpacity
+                    style={estilos.botaoIcone}
+                    onPress={abrirNovoPost}
+                    activeOpacity={0.7}
+                >
                     <Ionicons name="add" size={28} color={CoresInstagram.textoPrimario} />
                 </TouchableOpacity>
 
@@ -72,7 +82,9 @@ export function CabecalhoPerfil({
                 {/* Métricas: Posts, Seguidores, Seguindo */}
                 <View style={estilos.metricasConteiner}>
                     <View style={estilos.colunaMetrica}>
-                        <Text style={Tipografia.contadorNumero}>{usuario.totalPublicacoes}</Text>
+                        <Text style={Tipografia.contadorNumero}>
+                            {totalPublicacoesReal ?? usuario.totalPublicacoes}
+                        </Text>
                         <Text style={Tipografia.contadorRotulo}>posts</Text>
                     </View>
                     <View style={estilos.colunaMetrica}>
