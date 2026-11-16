@@ -103,7 +103,7 @@ export function GradeExplorar({
             <ActivityIndicator size="small" color={CoresInstagram.textoPrimario} />
             <Text style={estilos.textoCarregandoMais}>Carregando mais fotos...</Text>
           </View>
-        ) : null
+        ) : undefined
       }
       ListEmptyComponent={
         <View style={estilos.areaCarregamento}>
