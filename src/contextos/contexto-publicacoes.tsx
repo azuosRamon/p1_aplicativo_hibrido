@@ -17,11 +17,12 @@ import { publicacoesFeedMock, publicacoesPerfilMock, usuarioAtualMock } from "@/
 interface DadosContextoPublicacoes {
   publicacoes: PublicacaoFeed[];
   publicacoesDoUsuario: PublicacaoFeed[];
+  publicacoesSalvas: PublicacaoFeed[];
   estaCarregando: boolean;
   recarregarPublicacoes: () => Promise<void>;
   criarPublicacao: (uriFoto: string, legenda: string, localizacao?: string) => Promise<PublicacaoFeed>;
   alternarCurtida: (idPublicacao: string) => Promise<void>;
-  alternarSalvo: (idPublicacao: string) => Promise<void>;
+  alternarSalvo: (idPublicacao: string, postExterno?: PublicacaoFeed) => Promise<void>;
   buscarComentarios: (idPublicacao: string) => Promise<ComentarioPublicacao[]>;
   adicionarComentario: (idPublicacao: string, texto: string) => Promise<ComentarioPublicacao>;
   alternarCurtidaComentario: (
@@ -148,23 +149,33 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
     }
   }
 
-  async function alternarSalvo(idPublicacao: string): Promise<void> {
+  async function alternarSalvo(
+    idPublicacao: string,
+    postExterno?: PublicacaoFeed
+  ): Promise<void> {
     let novoEstadoSalvo = false;
     let encontrou = false;
 
-    setPublicacoes((anterior) =>
-      anterior.map((p) => {
+    setPublicacoes((anterior) => {
+      const existe = anterior.some((p) => p.id === idPublicacao);
+      if (!existe && postExterno) {
+        encontrou = true;
+        novoEstadoSalvo = true;
+        return [{ ...postExterno, estaSalvo: true }, ...anterior];
+      }
+
+      return anterior.map((p) => {
         if (p.id !== idPublicacao) return p;
         encontrou = true;
         novoEstadoSalvo = !p.estaSalvo;
         return { ...p, estaSalvo: novoEstadoSalvo };
-      })
-    );
+      });
+    });
 
     if (!encontrou) return;
 
     try {
-      await alternarSalvoNoBanco(idPublicacao, novoEstadoSalvo);
+      await alternarSalvoNoBanco(idPublicacao, novoEstadoSalvo, postExterno);
     } catch (erro) {
       console.warn("Erro ao persistir salvo no SQLite:", erro);
     }
@@ -229,11 +240,14 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
     (p) => p.ehDoUsuarioAtual || p.autor.id === usuarioAtualMock.id
   );
 
+  const publicacoesSalvas = publicacoes.filter((p) => Boolean(p.estaSalvo));
+
   return (
     <ContextoPublicacoes.Provider
       value={{
         publicacoes,
         publicacoesDoUsuario,
+        publicacoesSalvas,
         estaCarregando,
         recarregarPublicacoes,
         criarPublicacao,

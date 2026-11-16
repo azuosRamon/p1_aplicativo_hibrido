@@ -42,7 +42,7 @@ export function CartaoPublicacao({
 
   function lidarComSalvar() {
     setEstaSalvoLocal((ant) => !ant);
-    alternarSalvo(publicacao.id);
+    alternarSalvo(publicacao.id, publicacao);
   }
 
   const estaCurtido = estaCurtidoLocal;

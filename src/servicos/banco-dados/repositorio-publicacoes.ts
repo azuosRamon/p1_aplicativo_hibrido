@@ -154,10 +154,43 @@ export async function alternarCurtidaNoBanco(
  */
 export async function alternarSalvoNoBanco(
   idPublicacao: string,
-  novoEstadoSalvo: boolean
+  novoEstadoSalvo: boolean,
+  postExterno?: PublicacaoFeed
 ): Promise<void> {
   const banco = await obterBancoDados();
   const valorInteiroSalvo = novoEstadoSalvo ? 1 : 0;
+
+  if (postExterno) {
+    await banco.runAsync(
+      `INSERT OR IGNORE INTO publicacoes (
+        id, id_autor, nome_usuario, nome_completo, foto_autor_url,
+        caminho_midia, legenda, localizacao, audio_nome, outras_pessoas_marcadas,
+        texto_sobreposto, curtidas, esta_curtido, esta_salvo, eh_reel,
+        eh_do_usuario_atual, curtido_por_destaque, criado_em, ordem_exibicao
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        postExterno.id,
+        postExterno.autor.id,
+        postExterno.autor.nomeUsuario,
+        postExterno.autor.nomeCompleto,
+        postExterno.autor.fotoUrl,
+        postExterno.midiaUrl,
+        postExterno.legenda,
+        postExterno.localizacao ?? null,
+        postExterno.audioNome ?? null,
+        postExterno.outrasPessoasMarcadas ?? null,
+        postExterno.textoSobreposto ?? null,
+        postExterno.curtidas,
+        postExterno.estaCurtido ? 1 : 0,
+        valorInteiroSalvo,
+        postExterno.ehReel ? 1 : 0,
+        postExterno.ehDoUsuarioAtual ? 1 : 0,
+        postExterno.curtidoPorDestaque ?? "aleisa2015",
+        postExterno.criadoEm,
+        10,
+      ]
+    );
+  }
 
   await banco.runAsync(
     "UPDATE publicacoes SET esta_salvo = ? WHERE id = ?",

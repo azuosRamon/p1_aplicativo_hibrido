@@ -11,19 +11,63 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { CabecalhoTela } from "@/componentes/cabecalho-tela";
 import { PilulaFiltro } from "@/componentes/pilula-filtro";
-import { colecoesSalvasMock, publicacoesSalvasMock } from "@/dados/dados-mockados";
+import { CartaoPublicacao } from "@/componentes/cartao-publicacao";
+import { colecoesSalvasMock } from "@/dados/dados-mockados";
 import { CoresInstagram, Tipografia, RaiosBorda } from "@/constantes/sistema-design";
-import { PublicacaoExplorar } from "@/modelos/publicacao";
+import { PublicacaoFeed } from "@/modelos/publicacao";
+import { usarPublicacoes } from "@/contextos/contexto-publicacoes";
 
 const LARGURA_TELA = Dimensions.get("window").width;
 const ESPACO = 1.5;
 const LARGURA_ITEM = (LARGURA_TELA - ESPACO * 2) / 3;
 
 export default function TelaSalvos() {
+  "use no memo";
+  const navegador = useRouter();
+  const { publicacoesSalvas } = usarPublicacoes();
   const [filtroAtivo, setFiltroAtivo] = useState("Tudo");
+  const [postAberto, setPostAberto] = useState<PublicacaoFeed | null>(null);
   const filtros = ["Tudo", "Coleções", "Série", "Reels", "Posts"];
+
+  const itensFiltrados = publicacoesSalvas.filter((item) => {
+    if (filtroAtivo === "Reels") return Boolean(item.ehReel);
+    if (filtroAtivo === "Posts") return !item.ehReel;
+    return true;
+  });
+
+  function abrirComentarios(idPublicacao: string) {
+    navegador.push({
+      pathname: "/comentarios" as any,
+      params: { idPublicacao },
+    });
+  }
+
+  if (postAberto) {
+    return (
+      <SafeAreaView style={estilos.areaSegura} edges={["top"]}>
+        <CabecalhoTela
+          titulo="Salvos"
+          aoVoltar={() => setPostAberto(null)}
+        />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={estilos.conteudoLista}
+        >
+          {itensFiltrados.map((item) => (
+            <CartaoPublicacao
+              key={item.id}
+              publicacao={item}
+              aoPressionarComentarios={abrirComentarios}
+              aoPressionarCompartilhar={() => navegador.push("/(abas)/mensagens")}
+            />
+          ))}
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   function renderizarCabecalho() {
     return (
@@ -82,7 +126,9 @@ export default function TelaSalvos() {
 
         {/* Linha de Cabeçalho da Grade */}
         <View style={estilos.cabecalhoGrade}>
-          <Text style={Tipografia.tituloSecao}>Reels e posts</Text>
+          <Text style={Tipografia.tituloSecao}>
+            Reels e posts ({itensFiltrados.length})
+          </Text>
           <TouchableOpacity activeOpacity={0.7}>
             <Text style={estilos.linkAzul}>Gerenciar</Text>
           </TouchableOpacity>
@@ -91,7 +137,7 @@ export default function TelaSalvos() {
     );
   }
 
-  function renderizarItemGrade({ item, index }: { item: PublicacaoExplorar; index: number }) {
+  function renderizarItemGrade({ item, index }: { item: PublicacaoFeed; index: number }) {
     const ehTerceira = (index + 1) % 3 === 0;
 
     return (
@@ -100,10 +146,11 @@ export default function TelaSalvos() {
           estilos.itemGrade,
           { marginRight: ehTerceira ? 0 : ESPACO },
         ]}
+        onPress={() => setPostAberto(item)}
         activeOpacity={0.85}
       >
         <Image source={{ uri: item.midiaUrl }} style={estilos.imagemGrade} />
-        {item.ehVideo && (
+        {item.ehReel && (
           <View style={estilos.badgePlay}>
             <Ionicons name="play" size={14} color="#FFFFFF" />
           </View>
@@ -124,11 +171,19 @@ export default function TelaSalvos() {
       />
 
       <FlatList
-        data={publicacoesSalvasMock}
+        data={itensFiltrados}
         keyExtractor={(item) => item.id}
         renderItem={renderizarItemGrade}
         numColumns={3}
         ListHeaderComponent={renderizarCabecalho}
+        ListEmptyComponent={
+          <View style={estilos.estadoVazio}>
+            <Ionicons name="bookmark-outline" size={42} color={CoresInstagram.textoSuave} />
+            <Text style={estilos.textoVazio}>
+              Nenhuma publicação salva ainda. Toque no ícone de bandeirinha em qualquer post para salvar aqui!
+            </Text>
+          </View>
+        }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={estilos.conteudoLista}
       />
@@ -218,5 +273,18 @@ const estilos = StyleSheet.create({
     borderRadius: 11,
     alignItems: "center",
     justifyContent: "center",
+  },
+  estadoVazio: {
+    paddingVertical: 48,
+    paddingHorizontal: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  },
+  textoVazio: {
+    color: CoresInstagram.textoSecundario,
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
   },
 });
