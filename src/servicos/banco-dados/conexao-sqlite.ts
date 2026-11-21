@@ -48,6 +48,17 @@ const SQL_CRIAR_TABELAS = `
     criado_em_timestamp INTEGER NOT NULL,
     FOREIGN KEY (id_publicacao) REFERENCES publicacoes (id) ON DELETE CASCADE
   );
+
+  CREATE TABLE IF NOT EXISTS usuarios (
+    id TEXT PRIMARY KEY NOT NULL,
+    contato_email_celular TEXT NOT NULL,
+    nome_completo TEXT NOT NULL,
+    nome_usuario TEXT NOT NULL,
+    data_nascimento TEXT NOT NULL,
+    senha_hash TEXT NOT NULL,
+    senha_salt TEXT NOT NULL,
+    criado_em TEXT NOT NULL
+  );
 `;
 
 /**
