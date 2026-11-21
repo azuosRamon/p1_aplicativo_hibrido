@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { CabecalhoTela } from "@/componentes/cabecalho-tela";
@@ -8,6 +8,7 @@ import { ItemConfiguracaoLinha } from "@/componentes/item-configuracao";
 import { secoesConfiguracaoMock } from "@/dados/dados-mockados";
 import { CoresInstagram, Tipografia } from "@/constantes/sistema-design";
 import { ItemConfiguracao } from "@/modelos/configuracao";
+import { encerrarSessaoUsuario } from "@/servicos/banco-dados/repositorio-usuarios";
 
 export default function TelaConfiguracoesEAtividade() {
   const navegador = useRouter();
@@ -16,7 +17,14 @@ export default function TelaConfiguracoesEAtividade() {
   function lidarComCliqueItem(item: ItemConfiguracao) {
     if (item.rotaDestino) {
       navegador.push(item.rotaDestino as any);
+    } else if (item.id === "conf_central_contas") {
+      navegador.push("/login" as any);
     }
+  }
+
+  async function lidarComSairDaConta() {
+    await encerrarSessaoUsuario();
+    navegador.push("/login" as any);
   }
 
   return (
@@ -58,6 +66,27 @@ export default function TelaConfiguracoesEAtividade() {
             </View>
           );
         })}
+
+        {/* Seção Login e Encerramento de Sessão */}
+        <View style={estilos.secaoLogin}>
+          <Text style={estilos.tituloSecaoLogin}>Login</Text>
+
+          <TouchableOpacity
+            style={estilos.botaoAcaoLogin}
+            onPress={() => navegador.push("/cadastro" as any)}
+            activeOpacity={0.7}
+          >
+            <Text style={estilos.textoAdicionarConta}>Adicionar conta</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={estilos.botaoAcaoLogin}
+            onPress={lidarComSairDaConta}
+            activeOpacity={0.7}
+          >
+            <Text style={estilos.textoSair}>Sair</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -92,6 +121,30 @@ const estilos = StyleSheet.create({
   metaBadge: {
     color: CoresInstagram.textoSuave,
     fontSize: 13,
+    fontWeight: "600",
+  },
+  secaoLogin: {
+    marginTop: 22,
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
+  tituloSecaoLogin: {
+    ...Tipografia.subtitulo,
+    fontWeight: "600",
+    color: CoresInstagram.textoSecundario,
+    marginBottom: 10,
+  },
+  botaoAcaoLogin: {
+    paddingVertical: 12,
+  },
+  textoAdicionarConta: {
+    color: "#3EA6FF",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  textoSair: {
+    color: "#FF4D4D",
+    fontSize: 15,
     fontWeight: "600",
   },
 });

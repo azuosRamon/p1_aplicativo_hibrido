@@ -39,7 +39,11 @@ export function CabecalhoPerfil({
                     <Ionicons name="add" size={28} color={CoresInstagram.textoPrimario} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={estilos.seletorUsuario} activeOpacity={0.8}>
+                <TouchableOpacity
+                    style={estilos.seletorUsuario}
+                    onPress={() => navegador.push("/login" as any)}
+                    activeOpacity={0.8}
+                >
                     <Text style={estilos.nomeUsuarioTopo}>{usuario.nomeUsuario}</Text>
                     <Ionicons name="chevron-down" size={14} color={CoresInstagram.textoPrimario} />
                     <View style={estilos.pontoVermelhoTopo} />

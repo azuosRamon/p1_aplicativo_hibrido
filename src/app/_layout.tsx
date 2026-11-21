@@ -17,6 +17,8 @@ export default function LayoutRaiz() {
           }}
         >
           <Stack.Screen name="(abas)" options={{ headerShown: false }} />
+          <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen name="cadastro" options={{ headerShown: false }} />
           <Stack.Screen name="configuracoes" options={{ headerShown: false }} />
           <Stack.Screen name="salvos" options={{ headerShown: false }} />
           <Stack.Screen name="publicacoes-perfil" options={{ headerShown: false }} />

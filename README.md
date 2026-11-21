@@ -1,14 +1,16 @@
-### TELAS CRIADAS (P1 + P2)
+### TELAS CRIADAS (12 TELAS — P1 + P2)
 1. Início (Feed Principal sincronizado com SQLite)
 2. Mensagens (Direct)
 3. Explorar (Integrado com API REST de busca de fotos por palavra-chave: `"casa"`, `"carro"`, `"moto"`, etc., com Scroll Infinito e abertura em formato de Post)
 4. Perfil (Grade de 3 colunas sincronizada com SQLite e abertura em formato Scroll posicionado na foto clicada)
-5. Configurações
+5. Configurações (Com acesso à Central de Contas, Adicionar Conta e Sair)
 6. Salvos (Sincronizado em tempo real com SQLite e abertura posicionada no item salvo clicado)
 7. Novo Post — 1ª Etapa: Seleção de Foto da Galeria / Câmera (`src/app/novo-post/index.tsx`)
 8. Novo Post — 2ª Etapa: Adição de Legenda e Compartilhamento (`src/app/novo-post/legenda.tsx`)
 9. Posts do Perfil em Formato Scroll de Feed (`src/app/publicacoes-perfil.tsx`)
 10. Comentários da Publicação em Modal / Bottom Sheet (`src/app/comentarios.tsx`)
+11. Login com Autenticação Criptografada Hash SHA-256 + Salt (`src/app/login.tsx`)
+12. Cadastro de Conta Meta com Validação de Senha Forte `Mm$3` e $\ge 8$ Caracteres (`src/app/cadastro.tsx`)
 
 ### ARQUITETURA DE ARMAZENAMENTO E API (P2)
 - **FileSystem (`expo-file-system`)**: Salva os arquivos físicos das fotos capturadas pela câmera ou escolhidas na galeria dentro da pasta permanente do aplicativo (`documentDirectory/publicacoes_feed/`).
