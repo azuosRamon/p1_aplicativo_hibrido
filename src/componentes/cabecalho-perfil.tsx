@@ -68,13 +68,15 @@ export function CabecalhoPerfil({
 
             {/* Linha de Foto com Balão de Nota e Contadores */}
             <View style={estilos.linhaFotoEMetricas}>
-                {/* Foto de Perfil com Balão de Nota */}
+                {/* Foto de Perfil com Balão de Nota (apenas se o usuário tiver nota) */}
                 <View style={estilos.blocoAvatar}>
-                    <View style={estilos.balaoNotaPerfil}>
-                        <Text style={estilos.textoBalaoNota} numberOfLines={1}>
-                            {usuario.nota?.texto ?? "Deixe este espaço co..."}
-                        </Text>
-                    </View>
+                    {usuario.nota?.texto && (
+                        <View style={estilos.balaoNotaPerfil}>
+                            <Text style={estilos.textoBalaoNota} numberOfLines={1}>
+                                {usuario.nota.texto}
+                            </Text>
+                        </View>
+                    )}
                     <View style={estilos.avatarWrapper}>
                         {usuario.fotoUrl ? (
                             <Image source={{ uri: usuario.fotoUrl }} style={estilos.avatar} />
@@ -108,25 +110,31 @@ export function CabecalhoPerfil({
                 </View>
             </View>
 
-            {/* Biografia e Informações Pessoais */}
+            {/* Biografia e Informações Pessoais (vazia em contas novas, exibindo apenas o nome) */}
             <View style={estilos.secaoBio}>
                 <Text style={estilos.nomeCompleto}>{usuario.nomeCompleto}</Text>
-                {usuario.profissao && <Text style={estilos.linhaInfo}>{usuario.profissao}</Text>}
-                {usuario.cidade && <Text style={estilos.linhaInfo}>{usuario.cidade}</Text>}
-                {usuario.ano && <Text style={estilos.linhaInfo}>{usuario.ano}</Text>}
-                <Text style={estilos.linkMencao}>@{usuario.nomeUsuario}.app</Text>
+                {Boolean(usuario.biografia) && (
+                    <Text style={estilos.linhaInfo}>{usuario.biografia}</Text>
+                )}
+                {Boolean(usuario.profissao) && <Text style={estilos.linhaInfo}>{usuario.profissao}</Text>}
+                {Boolean(usuario.cidade) && <Text style={estilos.linhaInfo}>{usuario.cidade}</Text>}
+                {Boolean(usuario.ano) && <Text style={estilos.linhaInfo}>{usuario.ano}</Text>}
 
-                {/* Pílulas de Links */}
-                <View style={estilos.linhaPilulasLinks}>
-                    <View style={estilos.pilulaLink}>
-                        <Feather name="at-sign" size={12} color={CoresInstagram.textoPrimario} />
-                        <Text style={estilos.textoPilulaLink}>{usuario.nomeUsuario}</Text>
-                    </View>
-                    <TouchableOpacity style={estilos.pilulaAdicionar} activeOpacity={0.7}>
-                        <Ionicons name="add" size={14} color={CoresInstagram.textoPrimario} />
-                        <Text style={estilos.textoPilulaLink}>Adicionar</Text>
-                    </TouchableOpacity>
-                </View>
+                {Boolean(usuario.linkThreads) && (
+                    <>
+                        <Text style={estilos.linkMencao}>@{usuario.nomeUsuario}.app</Text>
+                        <View style={estilos.linhaPilulasLinks}>
+                            <View style={estilos.pilulaLink}>
+                                <Feather name="at-sign" size={12} color={CoresInstagram.textoPrimario} />
+                                <Text style={estilos.textoPilulaLink}>{usuario.nomeUsuario}</Text>
+                            </View>
+                            <TouchableOpacity style={estilos.pilulaAdicionar} activeOpacity={0.7}>
+                                <Ionicons name="add" size={14} color={CoresInstagram.textoPrimario} />
+                                <Text style={estilos.textoPilulaLink}>Adicionar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                )}
             </View>
 
             {/* Card "Seu painel" (apenas se o perfil já tiver visualizações registradas) */}

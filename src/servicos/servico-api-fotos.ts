@@ -98,12 +98,29 @@ async function buscarFotosNaApiFlickr(
   pagina: number
 ): Promise<PublicacaoExplorar[]> {
   const mapaTagsIngles: Record<string, string> = {
-    casa: "house,architecture",
+    casa: "house,home",
+    casas: "house,home",
     carro: "car,supercar",
+    carros: "car,supercar",
     moto: "motorcycle,motorbike",
+    motos: "motorcycle,motorbike",
     praia: "beach,ocean",
     natureza: "nature,landscape",
     arquitetura: "architecture,building",
+    cachorro: "dog,puppy",
+    gato: "cat,kitten",
+    comida: "food,gourmet",
+    futebol: "soccer,football",
+    viagem: "travel,vacation",
+    musica: "music,concert",
+    cidade: "city,urban",
+    floresta: "forest,trees",
+    computador: "computer,coding",
+    codigo: "coding,programming",
+    esporte: "sports,fitness",
+    animal: "wildlife,animal",
+    flor: "flower,garden",
+    aviao: "airplane,aviation",
   };
 
   const chave = termoBusca.trim().toLowerCase();
@@ -136,17 +153,22 @@ async function buscarFotosNaApiFlickr(
     });
 }
 
-function obterCatalogoBasePorTermo(termoBusca: string, pagina: number): PublicacaoExplorar[] {
+function obterCatalogoBasePorTermo(termoBusca: string, pagina: number): PublicacaoExplorar[] | null {
   const chave = termoBusca.trim().toLowerCase();
 
-  let listaCategoria = CATALOGO_CATEGORIAS[chave];
+  let listaCategoria: { url: string; titulo: string; autor: string }[] | undefined =
+    CATALOGO_CATEGORIAS[chave];
+
   if (!listaCategoria) {
-    if (chave.includes("casa") || chave.includes("mans")) listaCategoria = CATALOGO_CATEGORIAS.casa;
-    else if (chave.includes("carr") || chave.includes("auto")) listaCategoria = CATALOGO_CATEGORIAS.carro;
-    else if (chave.includes("moto")) listaCategoria = CATALOGO_CATEGORIAS.moto;
-    else if (chave.includes("prai") || chave.includes("mar")) listaCategoria = CATALOGO_CATEGORIAS.praia;
-    else if (chave.includes("natur") || chave.includes("flor")) listaCategoria = CATALOGO_CATEGORIAS.natureza;
-    else listaCategoria = CATALOGO_CATEGORIAS.arquitetura;
+    if (chave === "casas") listaCategoria = CATALOGO_CATEGORIAS.casa;
+    else if (chave === "carros") listaCategoria = CATALOGO_CATEGORIAS.carro;
+    else if (chave === "motos") listaCategoria = CATALOGO_CATEGORIAS.moto;
+  }
+
+  // Se o termo digitado não for uma das 6 categorias fixas, retorna null
+  // para exibir 100% os resultados puros vindos da API sem misturar fotos de arquitetura!
+  if (!listaCategoria) {
+    return null;
   }
 
   return listaCategoria.map((item, idx) => {
@@ -163,9 +185,8 @@ function obterCatalogoBasePorTermo(termoBusca: string, pagina: number): Publicac
 }
 
 /**
- * Busca imagens combinando o catálogo curado da categoria pesquisada com os resultados
- * ao vivo da API pública do Flickr, garantindo mudança imediata ao pesquisar "casa", "carro", "moto"
- * e suporte total ao Scroll Infinito.
+ * Busca imagens na API pública do Flickr combinando com o catálogo da categoria (quando aplicável),
+ * garantindo que buscas livres retornem exclusivamente as fotos da API sem imagens de outras categorias.
  */
 export async function buscarImagensExplorarPorTermo(
   termoPesquisa: string,
@@ -178,14 +199,18 @@ export async function buscarImagensExplorarPorTermo(
     await obterChaveApiPexels();
     const fotosApiFlickr = await buscarFotosNaApiFlickr(termoFinal, pagina);
 
+    // Se o usuário pesquisou qualquer termo livre (ex: "cachorro", "futebol", "comida"),
+    // retorna apenas as fotos vindas da API!
+    if (!baseCategoria) {
+      return fotosApiFlickr;
+    }
+
     if (pagina === 0) {
-      // Na primeira página, coloca as fotos temáticas em destaque seguidas pelas fotos da API ao vivo
       return [...baseCategoria, ...fotosApiFlickr.slice(0, 9)];
     }
 
-    // Nas páginas seguintes do Scroll Infinito, intercala novas fotos da API e da categoria
     return [...fotosApiFlickr.slice(0, 9), ...baseCategoria];
   } catch {
-    return baseCategoria;
+    return baseCategoria ?? [];
   }
 }
