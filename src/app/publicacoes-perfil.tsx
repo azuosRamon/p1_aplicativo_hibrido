@@ -19,7 +19,7 @@ export default function TelaPublicacoesPerfil() {
   "use no memo";
   const navegador = useRouter();
   const parametros = useLocalSearchParams<{ idPublicacao?: string }>();
-  const { publicacoesDoUsuario } = usarPublicacoes();
+  const { usuarioLogado, publicacoesDoUsuario } = usarPublicacoes();
 
   const referenciaScroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const posicoesYPorId = useRef<Record<string, number>>({});
@@ -70,7 +70,7 @@ export default function TelaPublicacoesPerfil() {
 
         <View style={estilos.blocoTitulos}>
           <Text style={estilos.tituloPrincipal}>Posts</Text>
-          <Text style={estilos.subtituloUsuario}>{usuarioAtualMock.nomeUsuario}</Text>
+          <Text style={estilos.subtituloUsuario}>{usuarioLogado.nomeUsuario}</Text>
         </View>
 
         <View style={estilos.espacadorDireito} />

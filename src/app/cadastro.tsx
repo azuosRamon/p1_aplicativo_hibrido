@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { cadastrarNovoUsuarioNoBanco } from "@/servicos/banco-dados/repositorio-usuarios";
 import { validarForcaSenha } from "@/utilitarios/seguranca-senha";
+import { usarPublicacoes } from "@/contextos/contexto-publicacoes";
 
 const LISTA_DIAS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, "0"));
 const LISTA_MESES = [
@@ -30,6 +31,7 @@ type TipoSeletorData = "dia" | "mes" | "ano" | null;
 export default function TelaCadastro() {
   "use no memo";
   const navegador = useRouter();
+  const { definirUsuarioAutenticado } = usarPublicacoes();
 
   const [contato, setContato] = useState<string>("");
   const [senha, setSenha] = useState<string>("");
@@ -75,7 +77,7 @@ export default function TelaCadastro() {
 
     setEstaCadastrando(true);
     try {
-      await cadastrarNovoUsuarioNoBanco({
+      const novoUsuario = await cadastrarNovoUsuarioNoBanco({
         contatoEmailCelular: contato,
         senhaPura: senha,
         dataNascimento: `${dia}/${mes}/${ano}`,
@@ -83,7 +85,8 @@ export default function TelaCadastro() {
         nomeUsuario,
       });
 
-      navegador.replace("/(abas)");
+      definirUsuarioAutenticado(novoUsuario);
+      navegador.replace("/(abas)/perfil" as any);
     } catch (erro: any) {
       setMensagemErro(erro?.message || "Erro ao realizar cadastro no banco de dados.");
     } finally {

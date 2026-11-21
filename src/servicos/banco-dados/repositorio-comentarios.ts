@@ -1,4 +1,5 @@
 import { ComentarioPublicacao, RegistroComentarioBanco } from "@/modelos/comentario";
+import { Usuario } from "@/modelos/usuario";
 import { usuarioAtualMock } from "@/dados/dados-mockados";
 import { obterBancoDados } from "./conexao-sqlite";
 
@@ -44,7 +45,8 @@ export async function listarComentariosDaPublicacao(
  */
 export async function inserirNovoComentarioNoBanco(
   idPublicacao: string,
-  textoComentario: string
+  textoComentario: string,
+  autorComentario: Usuario = usuarioAtualMock
 ): Promise<ComentarioPublicacao> {
   const banco = await obterBancoDados();
 
@@ -61,8 +63,8 @@ export async function inserirNovoComentarioNoBanco(
     [
       novoId,
       idPublicacao,
-      usuarioAtualMock.nomeUsuario,
-      usuarioAtualMock.fotoUrl,
+      autorComentario.nomeUsuario,
+      autorComentario.fotoUrl,
       textoLimpo,
       "Agora",
       0,
@@ -75,8 +77,8 @@ export async function inserirNovoComentarioNoBanco(
   return {
     id: novoId,
     idPublicacao,
-    nomeUsuario: usuarioAtualMock.nomeUsuario,
-    fotoUsuarioUrl: usuarioAtualMock.fotoUrl,
+    nomeUsuario: autorComentario.nomeUsuario,
+    fotoUsuarioUrl: autorComentario.fotoUrl,
     texto: textoLimpo,
     tempoDecorrido: "Agora",
     curtidas: 0,

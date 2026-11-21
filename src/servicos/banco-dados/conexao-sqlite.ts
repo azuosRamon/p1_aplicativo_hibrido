@@ -1,7 +1,7 @@
 import * as SQLite from "expo-sqlite";
 import { publicacoesFeedMock, publicacoesPerfilMock, usuarioAtualMock } from "@/dados/dados-mockados";
 
-const NOME_BANCO_DADOS = "instagram_p2_v2.db";
+const NOME_BANCO_DADOS = "instagram_p2_v3.db";
 
 let instanciaBanco: SQLite.SQLiteDatabase | null = null;
 let promessaConexao: Promise<SQLite.SQLiteDatabase> | null = null;

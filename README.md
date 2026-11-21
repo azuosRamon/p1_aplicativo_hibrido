@@ -10,7 +10,7 @@
 9. Posts do Perfil em Formato Scroll de Feed (`src/app/publicacoes-perfil.tsx`)
 10. Comentários da Publicação em Modal / Bottom Sheet (`src/app/comentarios.tsx`)
 11. Login com Autenticação Criptografada Hash SHA-256 + Salt (`src/app/login.tsx`)
-12. Cadastro de Conta Meta com Validação de Senha Forte `Mm$3` e $\ge 8$ Caracteres (`src/app/cadastro.tsx`)
+12. Cadastro de Conta com Validação de Senha Forte `Mm$3` e $\ge 8$ Caracteres (`src/app/cadastro.tsx`)
 
 ### ARQUITETURA DE ARMAZENAMENTO E API (P2)
 - **FileSystem (`expo-file-system`)**: Salva os arquivos físicos das fotos capturadas pela câmera ou escolhidas na galeria dentro da pasta permanente do aplicativo (`documentDirectory/publicacoes_feed/`).

@@ -3,7 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { CoresInstagram, RaiosBorda } from "@/constantes/sistema-design";
-import { usuarioAtualMock } from "@/dados/dados-mockados";
+import { usarPublicacoes } from "@/contextos/contexto-publicacoes";
 
 export interface PropsBarraNavegacaoInferior {
   state: {
@@ -17,6 +17,8 @@ export interface PropsBarraNavegacaoInferior {
 }
 
 export function BarraNavegacaoInferior({ state, navigation, navigateToTab }: PropsBarraNavegacaoInferior) {
+  "use no memo";
+  const { usuarioLogado } = usarPublicacoes();
   // Mapeamento das abas
   const abas = [
     { nome: "index", iconeAtivo: "home", iconeInativo: "home-outline" },
@@ -63,7 +65,13 @@ export function BarraNavegacaoInferior({ state, navigation, navigateToTab }: Pro
             >
               {aba.ehAvatar ? (
                 <View style={[estilos.conteinerAvatar, estaAtiva && estilos.avatarAtivoBorda]}>
-                  <Image source={{ uri: usuarioAtualMock.fotoUrl }} style={estilos.avatar} />
+                  {usuarioLogado.fotoUrl ? (
+                    <Image source={{ uri: usuarioLogado.fotoUrl }} style={estilos.avatar} />
+                  ) : (
+                    <View style={[estilos.avatar, estilos.avatarSemFoto]}>
+                      <Ionicons name="person" size={14} color="#8E96A3" />
+                    </View>
+                  )}
                   <View style={estilos.pontoNotificacaoAvatar} />
                 </View>
               ) : (
@@ -146,6 +154,11 @@ const estilos = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
+  },
+  avatarSemFoto: {
+    backgroundColor: "#262B33",
+    alignItems: "center",
+    justifyContent: "center",
   },
   pontoNotificacaoAvatar: {
     position: "absolute",

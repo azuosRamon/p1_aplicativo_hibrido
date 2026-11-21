@@ -16,10 +16,12 @@ import { useRouter } from "expo-router";
 import { autenticarUsuarioNoBanco } from "@/servicos/banco-dados/repositorio-usuarios";
 import { buscarPreferenciaTexto } from "@/servicos/servico-preferencias";
 import { validarForcaSenha } from "@/utilitarios/seguranca-senha";
+import { usarPublicacoes } from "@/contextos/contexto-publicacoes";
 
 export default function TelaLogin() {
   "use no memo";
   const navegador = useRouter();
+  const { definirUsuarioAutenticado } = usarPublicacoes();
 
   const [identificador, setIdentificador] = useState<string>("");
   const [senha, setSenha] = useState<string>("");
@@ -54,8 +56,9 @@ export default function TelaLogin() {
 
     setEstaEntrando(true);
     try {
-      await autenticarUsuarioNoBanco(identificador, senha);
-      navegador.replace("/(abas)");
+      const usuarioBanco = await autenticarUsuarioNoBanco(identificador, senha);
+      definirUsuarioAutenticado(usuarioBanco);
+      navegador.replace("/(abas)/perfil" as any);
     } catch (erro: any) {
       setMensagemErro(erro?.message || "Não foi possível entrar. Verifique seus dados.");
     } finally {

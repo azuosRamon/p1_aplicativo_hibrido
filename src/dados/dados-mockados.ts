@@ -11,7 +11,7 @@ export const usuarioAtualMock: Usuario = {
   id: "usuario_atual",
   nomeUsuario: "ramon.dev",
   nomeCompleto: "Ramon Souza",
-  fotoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+  fotoUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&auto=format&fit=crop&q=80",
   biografia: "Desenvolvedor de Software Móvel 📱\nCriando experiências fluidas com React Native & Expo\nRio de Janeiro, Brasil 🇧🇷",
   cidade: "Rio de Janeiro/RJ",
   profissao: "Engenheiro de Software",
@@ -348,7 +348,7 @@ export const destaquesPerfilMock: ItemDestaque[] = [
 export const publicacoesPerfilMock: PublicacaoPerfil[] = [
   {
     id: "perf_1",
-    midiaUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80",
+    midiaUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&auto=format&fit=crop&q=80",
     ehVideo: false,
   },
   {
@@ -358,7 +358,7 @@ export const publicacoesPerfilMock: PublicacaoPerfil[] = [
   },
   {
     id: "perf_3",
-    midiaUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop&q=80",
+    midiaUrl: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&auto=format&fit=crop&q=80",
     ehVideo: true,
     visualizacoes: "1,2 mil",
   },

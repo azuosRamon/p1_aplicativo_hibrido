@@ -76,7 +76,13 @@ export function CabecalhoPerfil({
                         </Text>
                     </View>
                     <View style={estilos.avatarWrapper}>
-                        <Image source={{ uri: usuario.fotoUrl }} style={estilos.avatar} />
+                        {usuario.fotoUrl ? (
+                            <Image source={{ uri: usuario.fotoUrl }} style={estilos.avatar} />
+                        ) : (
+                            <View style={[estilos.avatar, estilos.avatarSemFoto]}>
+                                <Ionicons name="person" size={42} color="#8E96A3" />
+                            </View>
+                        )}
                         <TouchableOpacity style={estilos.badgeAdicionarStory} activeOpacity={0.8}>
                             <Ionicons name="add" size={14} color="#FFFFFF" />
                         </TouchableOpacity>
@@ -123,14 +129,16 @@ export function CabecalhoPerfil({
                 </View>
             </View>
 
-            {/* Card "Seu painel" */}
-            <TouchableOpacity style={estilos.cardPainel} activeOpacity={0.75}>
-                <Text style={estilos.tituloPainel}>Seu painel</Text>
-                <Text style={estilos.subtituloPainel}>
-                    <Feather name="trending-up" size={13} color={CoresInstagram.verdeOnline} />{" "}
-                    {usuario.visualizacoesPainel ?? 344} visualizações nos últimos 30 dias.
-                </Text>
-            </TouchableOpacity>
+            {/* Card "Seu painel" (apenas se o perfil já tiver visualizações registradas) */}
+            {(usuario.visualizacoesPainel ?? 0) > 0 && (
+                <TouchableOpacity style={estilos.cardPainel} activeOpacity={0.75}>
+                    <Text style={estilos.tituloPainel}>Seu painel</Text>
+                    <Text style={estilos.subtituloPainel}>
+                        <Feather name="trending-up" size={13} color={CoresInstagram.verdeOnline} />{" "}
+                        {usuario.visualizacoesPainel} visualizações nos últimos 30 dias.
+                    </Text>
+                </TouchableOpacity>
+            )}
 
             {/* Botões de Ação do Perfil (Editar, Compartilhar, Sugestão) */}
             <View style={estilos.linhaBotoesAcao}>
@@ -255,6 +263,11 @@ const estilos = StyleSheet.create({
         height: 82,
         borderRadius: 41,
         backgroundColor: CoresInstagram.fundoSecundario,
+    },
+    avatarSemFoto: {
+        backgroundColor: "#262B33",
+        alignItems: "center",
+        justifyContent: "center",
     },
     badgeAdicionarStory: {
         position: "absolute",

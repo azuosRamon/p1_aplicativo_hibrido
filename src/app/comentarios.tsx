@@ -28,6 +28,7 @@ export default function TelaComentarios() {
   const idPublicacao = parametros.idPublicacao || "perf_1";
 
   const {
+    usuarioLogado,
     buscarComentarios,
     adicionarComentario,
     alternarCurtidaComentario,
@@ -153,7 +154,13 @@ export default function TelaComentarios() {
           </View>
 
           <View style={estilos.linhaEntrada}>
-            <Image source={{ uri: usuarioAtualMock.fotoUrl }} style={estilos.avatarEntrada} />
+            {usuarioLogado.fotoUrl ? (
+              <Image source={{ uri: usuarioLogado.fotoUrl }} style={estilos.avatarEntrada} />
+            ) : (
+              <View style={[estilos.avatarEntrada, estilos.avatarSemFoto]}>
+                <Ionicons name="person" size={20} color="#8E96A3" />
+              </View>
+            )}
 
             <View style={estilos.caixaInputArredondada}>
               <TextInput
@@ -296,6 +303,11 @@ const estilos = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
+  },
+  avatarSemFoto: {
+    backgroundColor: "#262B33",
+    alignItems: "center",
+    justifyContent: "center",
   },
   caixaInputArredondada: {
     flex: 1,

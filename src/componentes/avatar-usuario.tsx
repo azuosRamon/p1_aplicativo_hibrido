@@ -25,6 +25,30 @@ export function AvatarUsuario({
   const espacoBorda = 2.5;
   const tamanhoGradiente = tamanho + (espessuraAnel + espacoBorda) * 2;
 
+  const elementoFoto = fotoUrl ? (
+    <Image
+      source={{ uri: fotoUrl }}
+      style={{
+        width: tamanho,
+        height: tamanho,
+        borderRadius: tamanho / 2,
+      }}
+    />
+  ) : (
+    <View
+      style={{
+        width: tamanho,
+        height: tamanho,
+        borderRadius: tamanho / 2,
+        backgroundColor: "#262B33",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Ionicons name="person" size={Math.round(tamanho * 0.54)} color="#8E96A3" />
+    </View>
+  );
+
   const conteudoImagem = (
     <View
       style={[
@@ -36,14 +60,7 @@ export function AvatarUsuario({
         },
       ]}
     >
-      <Image
-        source={{ uri: fotoUrl }}
-        style={{
-          width: tamanho,
-          height: tamanho,
-          borderRadius: tamanho / 2,
-        }}
-      />
+      {elementoFoto}
       {ehSeuStory && (
         <View style={estilos.badgeAdicionar}>
           <Ionicons name="add" size={14} color="#FFFFFF" />
@@ -98,14 +115,7 @@ export function AvatarUsuario({
           position: "relative",
         }}
       >
-        <Image
-          source={{ uri: fotoUrl }}
-          style={{
-            width: tamanho,
-            height: tamanho,
-            borderRadius: tamanho / 2,
-          }}
-        />
+        {elementoFoto}
         {ehSeuStory && (
           <View style={estilos.badgeAdicionar}>
             <Ionicons name="add" size={14} color="#FFFFFF" />

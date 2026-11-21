@@ -30,9 +30,13 @@ type TipoAbaPerfil = "grade" | "reels" | "marcados";
 export default function TelaPerfil() {
   "use no memo";
   const navegador = useRouter();
-  const { publicacoesDoUsuario } = usarPublicacoes();
+  const { usuarioLogado, publicacoesDoUsuario } = usarPublicacoes();
   const [abaAtiva, setAbaAtiva] = useState<TipoAbaPerfil>("grade");
-  const [destaques] = useState<ItemDestaque[]>(destaquesPerfilMock);
+
+  const ehContaPadraoRamon = usuarioLogado.nomeUsuario.trim().toLowerCase() === "ramon.dev";
+  const destaquesExibidos: ItemDestaque[] = ehContaPadraoRamon
+    ? destaquesPerfilMock
+    : [{ id: "dest_novo", titulo: "Novo", capaUrl: "", ehNovo: true }];
 
   function abrirPublicacaoEmScroll(idPublicacao: string) {
     navegador.push({
@@ -45,7 +49,7 @@ export default function TelaPerfil() {
     return (
       <View style={estilos.secaoDestaques}>
         <FlatList
-          data={destaques}
+          data={destaquesExibidos}
           keyExtractor={(item) => item.id}
           horizontal={true}
           showsHorizontalScrollIndicator={false}
@@ -117,7 +121,7 @@ export default function TelaPerfil() {
     return (
       <View>
         <CabecalhoPerfil
-          usuario={usuarioAtualMock}
+          usuario={usuarioLogado}
           totalPublicacoesReal={publicacoesDoUsuario.length}
         />
         {renderizarDestaques()}
@@ -156,6 +160,15 @@ export default function TelaPerfil() {
         renderItem={renderizarFotoGrade}
         numColumns={3}
         ListHeaderComponent={renderizarCabecalhoCompleto}
+        ListEmptyComponent={
+          <View style={estilos.estadoVazioPerfil}>
+            <Ionicons name="camera-outline" size={44} color={CoresInstagram.textoSuave} />
+            <Text style={estilos.tituloVazioPerfil}>Ainda não há publicações</Text>
+            <Text style={estilos.subtituloVazioPerfil}>
+              Toque no botão + no topo para compartilhar sua primeira foto.
+            </Text>
+          </View>
+        }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={estilos.conteudoLista}
       />
@@ -244,5 +257,24 @@ const estilos = StyleSheet.create({
     position: "absolute",
     top: 6,
     right: 6,
+  },
+  estadoVazioPerfil: {
+    paddingVertical: 56,
+    paddingHorizontal: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  tituloVazioPerfil: {
+    color: CoresInstagram.textoPrimario,
+    fontSize: 17,
+    fontWeight: "700",
+    marginTop: 4,
+  },
+  subtituloVazioPerfil: {
+    color: CoresInstagram.textoSecundario,
+    fontSize: 13,
+    textAlign: "center",
+    lineHeight: 19,
   },
 });

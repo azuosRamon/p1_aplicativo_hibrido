@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { PublicacaoFeed } from "@/modelos/publicacao";
 import { ComentarioPublicacao } from "@/modelos/comentario";
+import { Usuario } from "@/modelos/usuario";
+import { RegistroUsuarioBanco } from "@/servicos/banco-dados/repositorio-usuarios";
 import {
   listarPublicacoesDoBanco,
   criarNovaPublicacaoNoBanco,
@@ -15,6 +17,8 @@ import {
 import { publicacoesFeedMock, publicacoesPerfilMock, usuarioAtualMock } from "@/dados/dados-mockados";
 
 interface DadosContextoPublicacoes {
+  usuarioLogado: Usuario;
+  definirUsuarioAutenticado: (registro: RegistroUsuarioBanco) => void;
   publicacoes: PublicacaoFeed[];
   publicacoesDoUsuario: PublicacaoFeed[];
   publicacoesSalvas: PublicacaoFeed[];
@@ -72,9 +76,32 @@ function montarFallbackInicial(): PublicacaoFeed[] {
 
 export function ProvedorPublicacoes({ children }: { children: React.ReactNode }) {
   "use no memo";
-  // Inicializa já com os posts prontos para nunca travar a tela inicial em estado vazio
+  const [usuarioLogado, setUsuarioLogado] = useState<Usuario>(usuarioAtualMock);
   const [publicacoes, setPublicacoes] = useState<PublicacaoFeed[]>(() => montarFallbackInicial());
   const [estaCarregando, setEstaCarregando] = useState<boolean>(false);
+
+  function definirUsuarioAutenticado(registro: RegistroUsuarioBanco) {
+    if (registro.nome_usuario.trim().toLowerCase() === "ramon.dev") {
+      setUsuarioLogado(usuarioAtualMock);
+      return;
+    }
+
+    // Novos perfis vêm sem foto de perfil e com posts, seguidores e seguindo zerados
+    const novoPerfilLimpo: Usuario = {
+      id: registro.id,
+      nomeUsuario: registro.nome_usuario,
+      nomeCompleto: registro.nome_completo,
+      fotoUrl: "",
+      biografia: "",
+      totalPublicacoes: 0,
+      totalSeguidores: 0,
+      totalSeguindo: 0,
+      visualizacoesPainel: 0,
+      possuiStoryNaoVisto: false,
+    };
+
+    setUsuarioLogado(novoPerfilLimpo);
+  }
 
   const recarregarPublicacoes = useCallback(async () => {
     try {
@@ -99,7 +126,7 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
     localizacao: string = "Maricá"
   ): Promise<PublicacaoFeed> {
     try {
-      const nova = await criarNovaPublicacaoNoBanco(uriFoto, legenda, localizacao);
+      const nova = await criarNovaPublicacaoNoBanco(uriFoto, legenda, localizacao, usuarioLogado);
       setPublicacoes((anterior) => [nova, ...anterior]);
       await recarregarPublicacoes();
       return nova;
@@ -107,7 +134,7 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
       console.warn("Fallback ao criar publicação:", erro);
       const novaFallback: PublicacaoFeed = {
         id: `post_${Date.now()}`,
-        autor: usuarioAtualMock,
+        autor: usuarioLogado,
         midiaUrl: uriFoto,
         legenda: legenda.trim(),
         localizacao,
@@ -195,7 +222,11 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
     texto: string
   ): Promise<ComentarioPublicacao> {
     try {
-      const novoComentario = await inserirNovoComentarioNoBanco(idPublicacao, texto);
+      const novoComentario = await inserirNovoComentarioNoBanco(
+        idPublicacao,
+        texto,
+        usuarioLogado
+      );
       setPublicacoes((anterior) =>
         anterior.map((p) =>
           p.id === idPublicacao ? { ...p, comentarios: p.comentarios + 1 } : p
@@ -207,8 +238,8 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
       const comentarioMemoria: ComentarioPublicacao = {
         id: `com_${Date.now()}`,
         idPublicacao,
-        nomeUsuario: usuarioAtualMock.nomeUsuario,
-        fotoUsuarioUrl: usuarioAtualMock.fotoUrl,
+        nomeUsuario: usuarioLogado.nomeUsuario,
+        fotoUsuarioUrl: usuarioLogado.fotoUrl,
         texto: texto.trim(),
         tempoDecorrido: "Agora",
         curtidas: 0,
@@ -245,15 +276,28 @@ export function ProvedorPublicacoes({ children }: { children: React.ReactNode })
       !p.id.startsWith("exp_")
   );
 
-  const publicacoesDoUsuario = publicacoes.filter(
-    (p) => p.ehDoUsuarioAtual || p.autor.id === usuarioAtualMock.id
-  );
+  const ehContaPadraoRamon = usuarioLogado.nomeUsuario.trim().toLowerCase() === "ramon.dev";
+
+  const publicacoesDoUsuario = publicacoes.filter((p) => {
+    if (ehContaPadraoRamon) {
+      return (
+        p.autor.id === "usuario_atual" ||
+        p.autor.nomeUsuario.trim().toLowerCase() === "ramon.dev"
+      );
+    }
+    return (
+      p.autor.id === usuarioLogado.id ||
+      p.autor.nomeUsuario.trim().toLowerCase() === usuarioLogado.nomeUsuario.trim().toLowerCase()
+    );
+  });
 
   const publicacoesSalvas = publicacoes.filter((p) => Boolean(p.estaSalvo));
 
   return (
     <ContextoPublicacoes.Provider
       value={{
+        usuarioLogado,
+        definirUsuarioAutenticado,
         publicacoes: publicacoesFeedPrincipal,
         publicacoesDoUsuario,
         publicacoesSalvas,

@@ -1,4 +1,5 @@
 import { PublicacaoFeed, RegistroPublicacaoBanco } from "@/modelos/publicacao";
+import { Usuario } from "@/modelos/usuario";
 import { usuarioAtualMock } from "@/dados/dados-mockados";
 import { salvarFotoNoSistemaArquivos } from "@/servicos/servico-arquivos";
 import { obterBancoDados } from "./conexao-sqlite";
@@ -69,7 +70,8 @@ export async function listarPublicacoesDoBanco(): Promise<PublicacaoFeed[]> {
 export async function criarNovaPublicacaoNoBanco(
   uriFotoEscolhida: string,
   legenda: string,
-  localizacao: string = "Maricá"
+  localizacao: string = "Maricá",
+  autorPublicacao: Usuario = usuarioAtualMock
 ): Promise<PublicacaoFeed> {
   const banco = await obterBancoDados();
 
@@ -93,10 +95,10 @@ export async function criarNovaPublicacaoNoBanco(
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       novoId,
-      usuarioAtualMock.id,
-      usuarioAtualMock.nomeUsuario,
-      usuarioAtualMock.nomeCompleto,
-      usuarioAtualMock.fotoUrl,
+      autorPublicacao.id,
+      autorPublicacao.nomeUsuario,
+      autorPublicacao.nomeCompleto,
+      autorPublicacao.fotoUrl,
       caminhoMidiaPermanente,
       legenda.trim(),
       localizacao,
@@ -116,7 +118,7 @@ export async function criarNovaPublicacaoNoBanco(
 
   return {
     id: novoId,
-    autor: usuarioAtualMock,
+    autor: autorPublicacao,
     midiaUrl: caminhoMidiaPermanente,
     legenda: legenda.trim(),
     localizacao,
